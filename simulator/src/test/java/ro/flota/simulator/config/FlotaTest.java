@@ -64,8 +64,8 @@ class FlotaTest {
 
     @Test
     void acceptaFisierSalvatCuBom() throws IOException {
-        scrie("trasee.json", "﻿" + TRASEE);
-        scrie("flota.json", "﻿" + FLOTA);
+        scrie("trasee.json", "\uFEFF" + TRASEE);
+        scrie("flota.json", "\uFEFF" + FLOTA);
         assertEquals(2, Flota.citeste(dosar).size());
     }
 

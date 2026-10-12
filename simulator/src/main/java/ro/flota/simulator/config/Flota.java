@@ -101,7 +101,7 @@ public final class Flota {
         } catch (IOException e) {
             throw new EroareConfigurare(fisier, "nu pot citi fișierul (" + e.getClass().getSimpleName() + ")");
         }
-        if (continut.startsWith("﻿")) {
+        if (continut.startsWith("\uFEFF")) {
             continut = continut.substring(1); // BOM-ul pus de PowerShell 5.1
         }
         try {
