@@ -13,6 +13,7 @@ export default {
   props: {
     zone: { type: Array, default: () => [] },
     selectata: { type: String, default: null },
+    traseu: { type: Array, default: () => [] },
   },
   emits: ['alege'],
   data() {
@@ -31,6 +32,12 @@ export default {
     zone() {
       this.deseneazaZone()
     },
+    traseu: {
+      deep: true,
+      handler() {
+        this.deseneazaTraseu()
+      },
+    },
   },
   mounted() {
     // Obiectele Leaflet stau pe `this`, dar nu în data(): Vue nu are voie să le facă reactive.
@@ -41,6 +48,7 @@ export default {
     }).addTo(this.harta)
     this.stratZone = L.layerGroup().addTo(this.harta)
     this.deseneazaZone()
+    this.stratTraseu = L.layerGroup().addTo(this.harta)
     this.markere = {}
     this.deseneazaMasini()
   },
@@ -80,6 +88,13 @@ export default {
       if (poligoane.length > 0) {
         this.harta.fitBounds(L.featureGroup(poligoane).getBounds(), { padding: [20, 20] })
       }
+    },
+    /** Faza 2: o singură linie plină. Faza 4 o împarte în live, recuperat și lipsă. */
+    deseneazaTraseu() {
+      this.stratTraseu.clearLayers()
+      if (this.traseu.length < 2) return
+      L.polyline(this.traseu.map((p) => [p.lat, p.lon]), { color: '#1565c0', weight: 4, opacity: 0.8 })
+        .addTo(this.stratTraseu)
     },
   },
 }
