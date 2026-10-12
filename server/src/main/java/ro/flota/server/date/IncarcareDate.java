@@ -65,6 +65,9 @@ public class IncarcareDate implements ApplicationRunner {
                     .param("zona", m.zona())
                     .update();
         }
+        // Un ONLINE rămas de la oprirea trecută nu mai e adevărat. Starea reală vine imediat după abonare,
+        // din mesajele reținute (spec §4.1); ClientMqtt se conectează abia după acest pas.
+        jdbc.sql("UPDATE masini SET stare = 'OFFLINE'").update();
         registru.incarca(zone, masini);
         log.info("Am încărcat {} zone și {} mașini din {}", zone.size(), masini.size(), dosar.toAbsolutePath().normalize());
     }
