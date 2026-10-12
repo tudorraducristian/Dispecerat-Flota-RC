@@ -16,3 +16,17 @@ prin MQTT. Designul: `AIS-OS\docs\superpowers\specs\2026-10-08-flota-rc-design.m
    ```powershell
    & "C:\Program Files\mosquitto\mosquitto_sub.exe" -h 127.0.0.1 -t "flota/#" -v
    ```
+
+3. Simulatorul, într-un al treilea terminal:
+
+   ```powershell
+   .\mvnw.cmd -q -pl simulator compile exec:java
+   ```
+
+   Se oprește cu Ctrl+C. La „Terminate batch job (Y/N)?" răspunzi Y.
+
+## Testele
+
+```powershell
+.\mvnw.cmd -q test
+```
