@@ -19,6 +19,11 @@
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.hivemq</groupId>
+      <artifactId>hivemq-mqtt-client</artifactId>
+      <version>${hivemq.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
