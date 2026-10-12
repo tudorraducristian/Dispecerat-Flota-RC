@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "z1",
+        "nume": "Centru",
+        "viteza_maxima": 50
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              23.58,
+              46.763
+            ],
+            [
+              23.6,
+              46.763
+            ],
+            [
+              23.6,
+              46.775
+            ],
+            [
+              23.58,
+              46.775
+            ],
+            [
+              23.58,
+              46.763
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
