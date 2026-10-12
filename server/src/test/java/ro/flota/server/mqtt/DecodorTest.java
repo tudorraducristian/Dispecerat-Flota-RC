@@ -83,4 +83,29 @@ class DecodorTest {
     void canalNecunoscutEsteRefuzat() {
         assertEquals("canal necunoscut: radio", motiv("flota/masina-3/radio", "{}"));
     }
+
+    @Test
+    void alarmaBunaDevineUnRecord() throws MesajInvalid {
+        assertEquals(new MesajPrimit.Alarma("masina-3", "SUPRAINCALZIRE", Instant.parse("2026-12-10T10:15:03.120Z"), 112.4),
+                decodeaza("flota/masina-3/alarma",
+                        "{\"tip\": \"SUPRAINCALZIRE\", \"ora\": \"2026-12-10T10:15:03.120Z\", \"valoare\": 112.4}"));
+    }
+
+    @Test
+    void tipulDeAlarmaNecunoscutEsteRefuzat() {
+        String mesaj = motiv("flota/masina-3/alarma",
+                "{\"tip\": \"INCENDIU\", \"ora\": \"2026-12-10T10:15:03.120Z\", \"valoare\": 1}");
+        assertTrue(mesaj.contains("INCENDIU"), mesaj);
+    }
+
+    @Test
+    void stareaOnlineSiOffline() throws MesajInvalid {
+        assertEquals(new MesajPrimit.Stare("masina-3", true), decodeaza("flota/masina-3/stare", "online"));
+        assertEquals(new MesajPrimit.Stare("masina-3", false), decodeaza("flota/masina-3/stare", "offline"));
+    }
+
+    @Test
+    void stareaGoalaEsteRefuzata() {
+        assertTrue(motiv("flota/masina-3/stare", "").contains("stare necunoscută"));
+    }
 }

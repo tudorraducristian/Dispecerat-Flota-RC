@@ -1,7 +1,9 @@
 package ro.flota.server.mqtt;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 import ro.flota.server.date.RegistruFlota;
 import tools.jackson.core.JacksonException;
@@ -14,6 +16,8 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Component
 public class Decodor {
+
+    static final Set<String> TIPURI_ALARMA = Set.of("SUPRAINCALZIRE", "FRANARE_BRUSCA");
 
     private final JsonMapper json;
     private final RegistruFlota registru;
@@ -34,6 +38,8 @@ public class Decodor {
         }
         return switch (parti[2]) {
             case "telemetrie" -> telemetrie(id, obiect(payload));
+            case "alarma" -> alarma(id, obiect(payload));
+            case "stare" -> stare(id, payload);
             default -> throw new MesajInvalid("canal necunoscut: " + parti[2]);
         };
     }
@@ -41,6 +47,23 @@ public class Decodor {
     private MesajPrimit.Telemetrie telemetrie(String id, JsonNode j) throws MesajInvalid {
         return new MesajPrimit.Telemetrie(id, intreg(j, "seq"), ora(j, "ora"), numar(j, "lat"), numar(j, "lon"),
                 numar(j, "viteza"), numar(j, "temperatura"), (int) intreg(j, "baterie"), adevarat(j, "din_buffer"));
+    }
+
+    private static MesajPrimit.Alarma alarma(String id, JsonNode j) throws MesajInvalid {
+        String tip = text(j, "tip");
+        if (!TIPURI_ALARMA.contains(tip)) {
+            throw new MesajInvalid("tip de alarmă necunoscut: " + tip);
+        }
+        return new MesajPrimit.Alarma(id, tip, ora(j, "ora"), numar(j, "valoare"));
+    }
+
+    private static MesajPrimit.Stare stare(String id, byte[] payload) throws MesajInvalid {
+        String text = new String(payload, StandardCharsets.UTF_8);
+        return switch (text) {
+            case "online" -> new MesajPrimit.Stare(id, true);
+            case "offline" -> new MesajPrimit.Stare(id, false);
+            default -> throw new MesajInvalid("stare necunoscută: \"" + text + "\"");
+        };
     }
 
     private JsonNode obiect(byte[] payload) throws MesajInvalid {
