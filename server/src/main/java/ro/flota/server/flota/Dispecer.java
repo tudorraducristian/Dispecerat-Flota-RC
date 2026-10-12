@@ -51,10 +51,12 @@ public class Dispecer {
         live.trimite("ALARMA", alarma);
     }
 
+    /** O stare primită din nou, de exemplu cea reținută, la o nouă abonare, nu e o schimbare: UI-ul o are deja. */
     private void laStare(MesajPrimit.Stare s) {
         Instant acum = ceas.instant();
-        masini.schimbaStare(s.masinaId(), s.online(), acum);
-        live.trimite("STARE", new StareMasinaDto(s.masinaId(), s.online() ? "ONLINE" : "OFFLINE", acum));
+        if (masini.schimbaStare(s.masinaId(), s.online(), acum)) {
+            live.trimite("STARE", new StareMasinaDto(s.masinaId(), s.online() ? "ONLINE" : "OFFLINE", acum));
+        }
     }
 
     static String detalii(MesajPrimit.Alarma a) {

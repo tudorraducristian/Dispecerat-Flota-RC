@@ -27,12 +27,16 @@ public class Masini {
                 .update();
     }
 
-    public void schimbaStare(String id, boolean online, Instant ora) {
-        jdbc.sql("UPDATE masini SET stare = :stare, ultima_vedere = :ora WHERE id = :id")
+    /**
+     * Schimbă starea doar dacă e alta decât cea din bază și spune dacă a schimbat-o. Starea e un mesaj reținut,
+     * deci broker-ul o trimite din nou la fiecare abonare; repetată, nu mută „văzută ultima dată” (D23).
+     */
+    public boolean schimbaStare(String id, boolean online, Instant ora) {
+        return jdbc.sql("UPDATE masini SET stare = :stare, ultima_vedere = :ora WHERE id = :id AND stare <> :stare")
                 .param("stare", online ? "ONLINE" : "OFFLINE")
                 .param("ora", Ore.ts(ora))
                 .param("id", id)
-                .update();
+                .update() == 1;
     }
 
     /** În ordinea numerelor: masina-2 înainte de masina-10. „masina-” are 7 caractere. */
