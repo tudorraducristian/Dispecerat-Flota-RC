@@ -11,6 +11,7 @@ const CULORI = { ONLINE: '#2e7d32', OFFLINE: '#9e9e9e' }
 export default {
   name: 'HartaFlotei',
   props: {
+    zone: { type: Array, default: () => [] },
     selectata: { type: String, default: null },
   },
   emits: ['alege'],
@@ -27,6 +28,9 @@ export default {
     selectata() {
       this.deseneazaMasini()
     },
+    zone() {
+      this.deseneazaZone()
+    },
   },
   mounted() {
     // Obiectele Leaflet stau pe `this`, dar nu în data(): Vue nu are voie să le facă reactive.
@@ -35,6 +39,8 @@ export default {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(this.harta)
+    this.stratZone = L.layerGroup().addTo(this.harta)
+    this.deseneazaZone()
     this.markere = {}
     this.deseneazaMasini()
   },
@@ -63,6 +69,17 @@ export default {
     },
     culoare(m) {
       return CULORI[m.stare] ?? CULORI.OFFLINE
+    },
+    deseneazaZone() {
+      this.stratZone.clearLayers()
+      const poligoane = this.zone.map((z) =>
+        L.polygon(z.poligon, { color: '#1565c0', weight: 1, fillOpacity: 0.08 })
+          .bindTooltip(`${z.nume}: maxim ${z.vitezaMaxima} km/h`)
+          .addTo(this.stratZone),
+      )
+      if (poligoane.length > 0) {
+        this.harta.fitBounds(L.featureGroup(poligoane).getBounds(), { padding: [20, 20] })
+      }
     },
   },
 }
