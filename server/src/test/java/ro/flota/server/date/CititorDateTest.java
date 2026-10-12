@@ -63,7 +63,7 @@ class CititorDateTest {
 
     @Test
     void acceptaZoneSalvateCuBom() throws IOException {
-        assertEquals(1, cititor.zone(scrie("zone.json", "﻿" + ZONE)).size());
+        assertEquals(1, cititor.zone(scrie("zone.json", "\uFEFF" + ZONE)).size());
     }
 
     @Test
