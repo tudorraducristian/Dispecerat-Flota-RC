@@ -18,6 +18,11 @@ public final class Mesaje {
         return new Mesaj(TipMesaj.TELEMETRIE, topic(idMasina, "telemetrie"), Json.MAPPER.writeValueAsBytes(t), 0, false);
     }
 
+    /** QoS 2: e rară și gravă, deci nu are voie nici să se piardă, nici să fie numărată de două ori. */
+    public static Mesaj alarma(String idMasina, Alarma a) {
+        return new Mesaj(TipMesaj.ALARMA, topic(idMasina, "alarma"), Json.MAPPER.writeValueAsBytes(a), 2, false);
+    }
+
     /** QoS 1 și reținut: cine se abonează mai târziu află starea pe loc. */
     public static Mesaj stare(String idMasina, boolean online) {
         byte[] text = (online ? "online" : "offline").getBytes(StandardCharsets.UTF_8);
