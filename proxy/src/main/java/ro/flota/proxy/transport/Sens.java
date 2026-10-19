@@ -61,16 +61,26 @@ final class Sens {
 
     private void citeste() {
         byte[] buf = new byte[MARIME_BUCATA];
+        boolean inchisCurat = false;
         try {
             int n;
             while (!oprit && (n = in.read(buf)) >= 0) {
                 long plecare = planificator.plecare(System.currentTimeMillis(), vreme.intarziereMs(), vreme.variatieMs());
                 coada.add(new Bucata(Arrays.copyOf(buf, n), plecare));
             }
+            inchisCurat = true;
         } catch (IOException e) {
             // Conexiunea s-a rupt; mai jos se anunță sfârșitul.
         }
-        if (!oprit) {
+        if (oprit) {
+            return;
+        }
+        if (inchisCurat && vreme.gauraPana() == null) {
+            // Ca la TCP: ce era deja pe drum ajunge, apoi se închide (D5). Sfârșitul îl anunță firul care scrie.
+            long plecare = planificator.plecare(System.currentTimeMillis(), vreme.intarziereMs(), vreme.variatieMs());
+            coada.add(Bucata.sfarsit(plecare));
+        } else {
+            // Conexiune ruptă, sau închisă în gaură (spec §5.3): ce stătea în coadă se aruncă.
             laSfarsit.run();
         }
     }
@@ -81,6 +91,9 @@ final class Sens {
                 Bucata bucata = coada.take();
                 asteaptaPana(bucata.plecareMs());
                 asteaptaSaTreacaGaura();
+                if (bucata.esteSfarsit()) {
+                    break; // tot ce trimisese celălalt capăt a plecat
+                }
                 out.write(bucata.octeti());
                 out.flush();
                 int kbps = vreme.bandaKbps();

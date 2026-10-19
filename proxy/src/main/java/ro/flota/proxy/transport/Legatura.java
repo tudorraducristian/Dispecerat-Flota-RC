@@ -10,7 +10,8 @@ import ro.flota.proxy.vreme.Vreme;
 
 /**
  * O mașină legată de broker prin proxy: două socket-uri și două sensuri (spec §5.1).
- * Când oricare capăt se închide, se închide tot, iar octeții din cozi se aruncă.
+ * Când un capăt închide curat, ce trimisese ajunge întâi la celălalt, apoi se închide tot.
+ * Când conexiunea se rupe, la un tunel sau într-o gaură, se închide pe loc, iar octeții din cozi se aruncă.
  */
 public final class Legatura implements Closeable {
 

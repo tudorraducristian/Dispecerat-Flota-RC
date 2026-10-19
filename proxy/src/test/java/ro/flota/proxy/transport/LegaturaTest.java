@@ -111,6 +111,33 @@ class LegaturaTest {
     }
 
     @Test
+    void oInchidereCurataDaMaiDepartePanaLaUltimulOctet() throws Exception {
+        registru.vreme("masina-3").intarziere(200, 0);
+        Socket[] masina = pereche();
+        Socket[] broker = pereche();
+        new Legatura("masina-3", masina[1], broker[0], registru).porneste("CONNECT".getBytes(StandardCharsets.US_ASCII));
+
+        scrie(masina[0], "DISCONNECT");
+        masina[0].close();
+        assertEquals("CONNECTDISCONNECT", citeste(broker[1], 17));
+        assertInchis(broker[1]);
+    }
+
+    @Test
+    void peVremeNormalaInchidereaCurataNuPierdeNimic() throws Exception {
+        for (int i = 0; i < 50; i++) {
+            Socket[] masina = pereche();
+            Socket[] broker = pereche();
+            new Legatura("masina-3", masina[1], broker[0], registru).porneste(new byte[0]);
+
+            scrie(masina[0], "DISCONNECT");
+            masina[0].close();
+            assertEquals("DISCONNECT", citeste(broker[1], 10), "încercarea " + i);
+            assertInchis(broker[1]);
+        }
+    }
+
+    @Test
     void aDouaInchidereNuStricaNimic() throws Exception {
         Socket[] masina = pereche();
         Socket[] broker = pereche();

@@ -81,4 +81,28 @@ class SensTest {
         assertEquals("abc", iesire.toString(StandardCharsets.US_ASCII));
         intrare.close();
     }
+
+    @Test
+    void laOInchidereCurataUltimiiOctetiPleacaInainteDeSfarsit() throws Exception {
+        vreme.intarziere(200, 0);
+        Sens s = sens();
+        s.porneste();
+        intrare.write("DISCONNECT".getBytes(StandardCharsets.US_ASCII));
+        intrare.flush();
+        intrare.close();
+        assertTrue(sfarsit.await(2, TimeUnit.SECONDS), "laSfarsit n-a fost chemat la închidere");
+        assertEquals("DISCONNECT", iesire.toString(StandardCharsets.US_ASCII), "laSfarsit a venit înaintea ultimilor octeți");
+    }
+
+    @Test
+    void inGauraInchidereaAruncaOctetiiPeLoc() throws Exception {
+        vreme.gaura(5);
+        Sens s = sens();
+        s.porneste();
+        intrare.write("abc".getBytes(StandardCharsets.US_ASCII));
+        intrare.flush();
+        intrare.close();
+        assertTrue(sfarsit.await(1, TimeUnit.SECONDS), "în gaură, închiderea trebuie anunțată pe loc (spec §5.3)");
+        assertEquals(0, iesire.size(), "octeții ținuți în gaură se aruncă");
+    }
 }
