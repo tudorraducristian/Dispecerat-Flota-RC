@@ -19,31 +19,44 @@ Fiecare pas e într-un terminal separat, din folderul ăsta.
    & "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto\mosquitto.conf -v
    ```
 
-2. **S, serverul:**
+2. **P, proxy-ul:** mașinile pe 1884, ordinele pe 1885.
+
+   ```powershell
+   .\mvnw.cmd -q -pl proxy compile exec:java
+   ```
+
+3. **S, serverul:**
 
    ```powershell
    .\mvnw.cmd -q -pl server spring-boot:run
    ```
 
-3. **W, UI-ul,** apoi deschizi http://127.0.0.1:5173:
+4. **W, UI-ul,** apoi deschizi http://127.0.0.1:5173:
 
    ```powershell
    cd web; npm run dev
    ```
 
-4. **C, simulatorul:**
+5. **C, simulatorul,** care se conectează la proxy:
 
    ```powershell
    .\mvnw.cmd -q -pl simulator compile exec:java
    ```
 
-5. **Opțional, ce circulă pe MQTT:**
+6. **O, ordinele pentru proxy,** de exemplu `TUNEL masina-3 15` sau `STARE`:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File unelte\ordine.ps1
+   ```
+
+7. **Opțional, ce circulă pe MQTT:**
 
    ```powershell
    & "C:\Program Files\mosquitto\mosquitto_sub.exe" -h 127.0.0.1 -t "flota/#" -v
    ```
 
-Se opresc cu Ctrl+C. La „Terminate batch job (Y/N)?” răspunzi Y.
+Se opresc cu Ctrl+C. La „Terminate batch job (Y/N)?” răspunzi Y. Scenariul
+complet de test e în `docs\scenariu-test.md`.
 
 ## Testele
 
