@@ -12,6 +12,7 @@
   <modules>
     <module>simulator</module>
     <module>server</module>
+    <module>proxy</module>
   </modules>
 
   <properties>
