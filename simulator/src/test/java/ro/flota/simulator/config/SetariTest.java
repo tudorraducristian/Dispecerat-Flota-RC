@@ -47,7 +47,7 @@ class SetariTest {
     }
 
     @Test
-    void fisierulDinResursePornesteDirectPeBroker() {
-        assertEquals(new Setari("127.0.0.1", 1883, 5, 1000), Setari.implicite());
+    void fisierulDinResurseTrecePrinProxy() {
+        assertEquals(new Setari("127.0.0.1", 1884, 5, 1000), Setari.implicite());
     }
 }
