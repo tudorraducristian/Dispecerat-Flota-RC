@@ -33,6 +33,10 @@ public final class Ordine {
             return switch (comanda) {
                 case "STARE" -> stare(p);
                 case "INTARZIERE" -> intarziere(p);
+                case "BANDA" -> banda(p);
+                case "TUNEL" -> tunel(p);
+                case "GAURA" -> gaura(p);
+                case "NORMAL" -> normal(p);
                 default -> List.of(ERR_COMANDA);
             };
         } catch (MasinaNecunoscuta e) {
@@ -49,6 +53,43 @@ public final class Ordine {
         int ms = numar(p[1], 0, 10_000);
         int variatie = p.length == 3 ? numar(p[2], 0, 10_000) : 0;
         masini.forEach(m -> registru.vreme(m).intarziere(ms, variatie));
+        return List.of(OK);
+    }
+
+    /** BANDA <masina|TOATE> <kbps> */
+    private List<String> banda(String[] p) {
+        numarParametri(p, 2, 2);
+        List<String> masini = tinte(p[0]);
+        int kbps = numar(p[1], 1, 100_000);
+        masini.forEach(m -> registru.vreme(m).banda(kbps));
+        return List.of(OK);
+    }
+
+    /** TUNEL <masina|TOATE> <secunde>: conexiunile deschise se taie pe loc. */
+    private List<String> tunel(String[] p) {
+        numarParametri(p, 2, 2);
+        List<String> masini = tinte(p[0]);
+        int secunde = numar(p[1], 1, 600);
+        for (String m : masini) {
+            registru.vreme(m).tunel(secunde);
+            registru.inchideLegaturile(m);
+        }
+        return List.of(OK);
+    }
+
+    /** GAURA <masina|TOATE> <secunde>: conexiunile rămân deschise, dar nu mai trece nimic. */
+    private List<String> gaura(String[] p) {
+        numarParametri(p, 2, 2);
+        List<String> masini = tinte(p[0]);
+        int secunde = numar(p[1], 1, 600);
+        masini.forEach(m -> registru.vreme(m).gaura(secunde));
+        return List.of(OK);
+    }
+
+    /** NORMAL <masina|TOATE> */
+    private List<String> normal(String[] p) {
+        numarParametri(p, 1, 1);
+        tinte(p[0]).forEach(m -> registru.vreme(m).normal());
         return List.of(OK);
     }
 
