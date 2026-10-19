@@ -2,7 +2,9 @@ package ro.flota.proxy.ordine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.Closeable;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ro.flota.proxy.testutil.CeasManual;
@@ -111,5 +113,76 @@ class OrdineTest {
     @Test
     void toateFaraMasiniEsteOk() {
         assertEquals(List.of("OK"), new Ordine(new Registru(ceas)).executa("INTARZIERE TOATE 100"));
+    }
+
+    @Test
+    void banda() {
+        assertEquals("OK", unu("BANDA masina-3 64"));
+        assertEquals("BANDA 64", descriere("masina-3"));
+    }
+
+    @Test
+    void bandaInAfaraIntervalului() {
+        for (String linie : List.of("BANDA masina-3 0", "BANDA masina-3 100001", "BANDA masina-3", "BANDA masina-3 64 1")) {
+            assertEquals(Ordine.ERR_PARAMETRI, unu(linie), linie);
+        }
+    }
+
+    @Test
+    void tunelulTineSiInchideLegaturile() {
+        AtomicInteger inchise = new AtomicInteger();
+        Closeable legatura = inchise::incrementAndGet;
+        registru.adaugaLegatura("masina-3", legatura);
+        assertEquals("OK", unu("TUNEL masina-3 15"));
+        assertEquals(1, inchise.get());
+        assertEquals("TUNEL 15", descriere("masina-3"));
+        ceas.avanseaza(15_000);
+        assertEquals("NORMAL", descriere("masina-3"));
+    }
+
+    @Test
+    void tunelPeToateInchideToateMasinile() {
+        AtomicInteger inchise = new AtomicInteger();
+        Closeable a = inchise::incrementAndGet;
+        Closeable b = inchise::incrementAndGet;
+        registru.adaugaLegatura("masina-3", a);
+        registru.adaugaLegatura("masina-5", b);
+        assertEquals("OK", unu("TUNEL TOATE 10"));
+        assertEquals(2, inchise.get());
+    }
+
+    @Test
+    void gaura() {
+        assertEquals("OK", unu("GAURA masina-5 10"));
+        assertEquals("GAURA 10", descriere("masina-5"));
+    }
+
+    @Test
+    void durataInAfaraIntervalului() {
+        for (String linie : List.of("TUNEL masina-3 0", "TUNEL masina-3 601", "TUNEL masina-3 -5", "TUNEL masina-3",
+                "GAURA masina-3 0", "GAURA masina-3 601", "GAURA masina-3 1.5")) {
+            assertEquals(Ordine.ERR_PARAMETRI, unu(linie), linie);
+        }
+    }
+
+    @Test
+    void normalStergeTot() {
+        unu("INTARZIERE masina-3 500 200");
+        unu("BANDA masina-3 64");
+        unu("GAURA masina-3 30");
+        assertEquals("OK", unu("NORMAL masina-3"));
+        assertEquals("NORMAL", descriere("masina-3"));
+    }
+
+    @Test
+    void normalNuPrimesteDurata() {
+        assertEquals(Ordine.ERR_PARAMETRI, unu("NORMAL masina-3 5"));
+    }
+
+    @Test
+    void comenzileNoiCerMasiniCunoscute() {
+        for (String linie : List.of("BANDA masina-99 64", "TUNEL masina-99 10", "GAURA masina-99 10", "NORMAL masina-99")) {
+            assertEquals(Ordine.ERR_MASINA, unu(linie), linie);
+        }
     }
 }
