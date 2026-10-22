@@ -5,6 +5,7 @@
 <script>
 import L from 'leaflet'
 import { flota } from '../live.js'
+import { segmente } from '../traseu.js'
 
 const CULORI = { ONLINE: '#2e7d32', OFFLINE: '#9e9e9e' }
 
@@ -89,12 +90,14 @@ export default {
         this.harta.fitBounds(L.featureGroup(poligoane).getBounds(), { padding: [20, 20] })
       }
     },
-    /** Faza 2: o singură linie plină. Faza 4 o împarte în live, recuperat și lipsă. */
+    /** Linie plină pentru live, punctată pentru ce s-a recuperat din buffer, nimic unde lipsesc mesaje. */
     deseneazaTraseu() {
       this.stratTraseu.clearLayers()
-      if (this.traseu.length < 2) return
-      L.polyline(this.traseu.map((p) => [p.lat, p.lon]), { color: '#1565c0', weight: 4, opacity: 0.8 })
-        .addTo(this.stratTraseu)
+      for (const s of segmente(this.traseu)) {
+        const stil = { color: '#1565c0', weight: 4, opacity: 0.8 }
+        if (s.fel === 'recuperat') stil.dashArray = '2 8'
+        L.polyline(s.puncte, stil).addTo(this.stratTraseu)
+      }
     },
   },
 }
