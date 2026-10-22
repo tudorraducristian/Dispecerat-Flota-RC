@@ -21,6 +21,16 @@ export async function incarcaMasini() {
   }
 }
 
+/** Contoarele unei mașini, din REST. Până la faza 5, panoul le cere la 2 secunde (D25). */
+export async function actualizeazaContoare(id) {
+  const m = await api.masina(id)
+  const tabla = flota.masini[id]
+  if (tabla) {
+    tabla.recuperate = m.recuperate
+    tabla.pierdute = m.pierdute
+  }
+}
+
 /** Deschide canalul live. Dacă se închide, inclusiv când serverul e oprit, reîncearcă la 2 secunde. */
 export function pornesteLive() {
   const ws = new WebSocket(`ws://${location.host}/ws`)
