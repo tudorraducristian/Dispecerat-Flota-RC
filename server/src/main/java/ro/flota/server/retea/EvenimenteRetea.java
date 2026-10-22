@@ -1,6 +1,7 @@
 package ro.flota.server.retea;
 
 import java.time.Instant;
+import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -28,5 +29,14 @@ public class EvenimenteRetea {
                 .param("sfarsit", Ore.ts(sfarsit))
                 .update(cheie);
         return new EvenimentDto(cheie.getKey().longValue(), tinta, linie, raspuns, start, sfarsit);
+    }
+
+    public List<EvenimentDto> ultimele(int n) {
+        return jdbc.sql("SELECT * FROM evenimente_retea ORDER BY id DESC LIMIT :n")
+                .param("n", n)
+                .query((rs, nr) -> new EvenimentDto(rs.getLong("id"), rs.getString("tinta"), rs.getString("linie"),
+                        rs.getString("raspuns"), Ore.instant(rs.getTimestamp("ora_start")),
+                        Ore.instant(rs.getTimestamp("ora_sfarsit"))))
+                .list();
     }
 }

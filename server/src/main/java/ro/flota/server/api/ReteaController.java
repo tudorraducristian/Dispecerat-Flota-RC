@@ -50,4 +50,10 @@ public class ReteaController {
         live.trimite("EVENIMENT_RETEA", eveniment);
         return eveniment;
     }
+
+    /** Endpoint-ul 11: jurnalul evenimentelor de rețea. */
+    @GetMapping("/evenimente")
+    public List<EvenimentDto> evenimente() {
+        return evenimente.ultimele(50);
+    }
 }
