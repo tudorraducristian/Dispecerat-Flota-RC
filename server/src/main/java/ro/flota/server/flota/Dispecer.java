@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ro.flota.server.comenzi.Comenzi;
+import ro.flota.server.date.Punct;
 import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
+import ro.flota.server.reguli.ReguliAlarma;
 
 /**
  * Ce face serverul cu fiecare mesaj (spec §6.3). Rulează pe firul unic al lui ClientMqtt,
@@ -23,14 +25,16 @@ public class Dispecer {
     private final Masini masini;
     private final Alarme alarme;
     private final Comenzi comenzi;
+    private final ReguliAlarma reguli;
     private final CanalLive live;
     private final Clock ceas;
 
-    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, Comenzi comenzi, CanalLive live, Clock ceas) {
+    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, Comenzi comenzi, ReguliAlarma reguli, CanalLive live, Clock ceas) {
         this.pozitii = pozitii;
         this.masini = masini;
         this.alarme = alarme;
         this.comenzi = comenzi;
+        this.reguli = reguli;
         this.live = live;
         this.ceas = ceas;
     }
@@ -61,6 +65,10 @@ public class Dispecer {
             log.info("{}: lipsesc {} mesaje înainte de seq {}", t.masinaId(), secventa.pierdute(), t.seq());
         }
         masini.dupaTelemetrie(t.masinaId(), t.seq(), secventa.pierdute(), t.dinBuffer(), sosire);
+        // Regulile se aplică și pozițiilor recuperate; alarma poartă ora mașinii (spec §6.4).
+        for (ReguliAlarma.AlarmaNoua a : reguli.verifica(t.masinaId(), new Punct(t.lat(), t.lon()), t.viteza())) {
+            live.trimite("ALARMA", alarme.salveaza(t.masinaId(), a.tip(), "SERVER", t.oraMasinii(), sosire, a.detalii()));
+        }
         live.trimite("POZITIE", pozitie);
     }
 
