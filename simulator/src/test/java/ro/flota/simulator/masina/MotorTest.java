@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.junit.jupiter.api.Test;
 import ro.flota.simulator.Json;
 import ro.flota.simulator.config.DefinitieMasina;
@@ -24,7 +22,7 @@ class MotorTest {
 
     private static final Clock CEAS = Clock.fixed(Instant.parse("2026-12-10T10:15:03.120Z"), ZoneOffset.UTC);
 
-    private final BlockingDeque<Mesaj> coada = new LinkedBlockingDeque<>();
+    private final Buffer coada = new Buffer(300);
 
     private static Viteza spre50() {
         return new Viteza(new AleatorScriptat(0.99, 0.5, 0.5), new AleatorScriptat(0.99), 0);
@@ -46,8 +44,8 @@ class MotorTest {
     @Test
     void primulTickPuneOTelemetrieCuSeq1() {
         motor(0, spre50(), normala(85), true).tick();
-        assertEquals(1, coada.size());
-        Mesaj m = coada.peekFirst();
+        assertEquals(1, coada.marime());
+        Mesaj m = coada.continut().getFirst();
         assertEquals(TipMesaj.TELEMETRIE, m.tip());
         assertEquals("flota/masina-1/telemetrie", m.topic());
         JsonNode j = json(m);
@@ -64,13 +62,13 @@ class MotorTest {
         motor.tick();
         motor.tick();
         motor.tick();
-        assertEquals(3, json(coada.peekLast()).get("seq").asLong());
+        assertEquals(3, json(coada.continut().getLast()).get("seq").asLong());
     }
 
     @Test
     void dinBufferSpuneCaRadioulEraDeconectat() {
         motor(0, spre50(), normala(85), false).tick();
-        assertTrue(json(coada.peekFirst()).get("din_buffer").asBoolean());
+        assertTrue(json(coada.continut().getFirst()).get("din_buffer").asBoolean());
     }
 
     @Test
@@ -79,7 +77,7 @@ class MotorTest {
         for (int i = 0; i < 10; i++) {
             motor.tick(); // 5 + 10 + ... + 50 = 275 km/h·s, adică 76,389 m spre nord
         }
-        JsonNode j = json(coada.peekLast());
+        JsonNode j = json(coada.continut().getLast());
         assertEquals(46.00069, j.get("lat").asDouble(), 1e-9);
         assertEquals(23.0, j.get("lon").asDouble(), 1e-9);
     }
@@ -87,7 +85,7 @@ class MotorTest {
     @Test
     void startulDinFlotaMutaMasinaPeBucla() {
         motor(0.25, spre50(), normala(85), true).tick(); // 94,218 m + 1,389 m
-        assertEquals(46.00086, json(coada.peekFirst()).get("lat").asDouble(), 1e-9);
+        assertEquals(46.00086, json(coada.continut().getFirst()).get("lat").asDouble(), 1e-9);
     }
 
     @Test
@@ -96,15 +94,15 @@ class MotorTest {
         for (int i = 0; i < 61; i++) {
             motor.tick();
         }
-        assertEquals(99, json(coada.peekLast()).get("baterie").asInt());
+        assertEquals(99, json(coada.continut().getLast()).get("baterie").asInt());
     }
 
     @Test
     void supraincalzireaPuneOAlarmaDupaTelemetrie() {
         Temperatura cuDefect = new Temperatura(new AleatorScriptat(0.99, 0.0), new AleatorScriptat(0.5), 109.8);
         motor(0, spre50(), cuDefect, true).tick();
-        assertEquals(2, coada.size());
-        Mesaj alarma = coada.peekLast();
+        assertEquals(2, coada.marime());
+        Mesaj alarma = coada.continut().getLast();
         assertEquals(TipMesaj.ALARMA, alarma.tip());
         assertEquals(2, alarma.qos());
         assertEquals("SUPRAINCALZIRE", json(alarma).get("tip").asString());
@@ -117,7 +115,7 @@ class MotorTest {
         Motor motor = motor(0, franeaza, normala(85), true);
         motor.tick(); // 60
         motor.tick(); // 30
-        Mesaj alarma = coada.peekLast();
+        Mesaj alarma = coada.continut().getLast();
         assertEquals(TipMesaj.ALARMA, alarma.tip());
         assertEquals("FRANARE_BRUSCA", json(alarma).get("tip").asString());
         assertEquals(30.0, json(alarma).get("valoare").asDouble(), 1e-9);

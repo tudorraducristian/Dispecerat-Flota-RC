@@ -7,21 +7,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.junit.jupiter.api.Test;
 import ro.flota.simulator.Json;
 import ro.flota.simulator.mesaje.Mesaj;
 import ro.flota.simulator.mesaje.Mesaje;
 import ro.flota.simulator.mesaje.Telemetrie;
 import ro.flota.simulator.mesaje.TipMesaj;
+import ro.flota.simulator.testutil.AleatorScriptat;
 
 class RadioTest {
 
     private final ConexiuneFalsa conexiune = new ConexiuneFalsa();
-    private final BlockingDeque<Mesaj> coada = new LinkedBlockingDeque<>();
+    private final Buffer coada = new Buffer(300);
     private final List<Long> somnuri = new ArrayList<>();
-    private final Radio radio = new Radio("masina-1", conexiune, coada, somnuri::add);
+
+    /** Cu 0.5, factorul la întâmplare e exact 1, deci pauzele sînt 1, 2, 4... secunde. */
+    private static PauzaReconectare pauzaFixa() {
+        return new PauzaReconectare(new AleatorScriptat(0.5));
+    }
+
+    private final Radio radio = new Radio("masina-1", conexiune, coada, pauzaFixa(), somnuri::add);
 
     private static Mesaj telemetrie(long seq) {
         return Mesaje.telemetrie("masina-1",
@@ -47,49 +52,72 @@ class RadioTest {
 
     @Test
     void golesteCoadaInOrdine() throws Exception {
-        coada.add(telemetrie(1));
-        coada.add(telemetrie(2));
+        coada.adauga(telemetrie(1));
+        coada.adauga(telemetrie(2));
         radio.pas();
         radio.pas();
         radio.pas();
         assertEquals(List.of(1L, 2L), seqTrimise());
-        assertTrue(coada.isEmpty());
+        assertEquals(0, coada.marime());
     }
 
     @Test
     void brokerIndisponibilLaPornire() throws Exception {
-        conexiune.esueazaLaConectare(2);
-        coada.add(telemetrie(1));
+        conexiune.esueazaLaConectare(3);
+        coada.adauga(telemetrie(1));
         radio.pas();
         radio.pas();
-        assertEquals(List.of(5_000L, 5_000L), somnuri);
+        radio.pas();
+        assertEquals(List.of(1_000L, 2_000L, 4_000L), somnuri);
         assertTrue(conexiune.publicate.isEmpty());
-        radio.pas(); // a treia încercare reușește
+        radio.pas(); // a patra încercare reușește
         radio.pas();
-        assertEquals(3, conexiune.conectari);
+        assertEquals(4, conexiune.conectari);
         assertEquals(List.of(1L), seqTrimise());
+    }
+
+    @Test
+    void dupaConectarePauzaOIaDeLaCapat() throws Exception {
+        conexiune.esueazaLaConectare(2);
+        radio.pas();
+        radio.pas();
+        radio.pas(); // conectată la a treia
+        conexiune.pierdeConexiunea();
+        conexiune.esueazaLaConectare(1);
+        radio.pas();
+        assertEquals(List.of(1_000L, 2_000L, 1_000L), somnuri);
     }
 
     @Test
     void mesajulNuSePierdeCandPublicareaEsueaza() throws Exception {
         radio.pas(); // conectat
         Mesaj primul = telemetrie(1);
-        coada.add(primul);
-        coada.add(telemetrie(2));
+        coada.adauga(primul);
+        coada.adauga(telemetrie(2));
         conexiune.esueazaLaPublicare(1);
         radio.pas();
-        assertSame(primul, coada.peekFirst());
+        assertSame(primul, coada.continut().getFirst());
         assertEquals(List.of(1_000L), somnuri);
         conexiune.pierdeConexiunea();
-        radio.pas(); // reconectare și „online"
+        radio.pas(); // reconectare și „online”
         radio.pas();
         radio.pas();
         assertEquals(List.of(1L, 2L), seqTrimise());
     }
 
     @Test
+    void onlineEsuatInseamnaReconectare() throws Exception {
+        conexiune.esueazaLaPublicare(1);
+        radio.pas();
+        assertFalse(conexiune.conectata(), "fără „online”, mașina nu are voie să rămână conectată");
+        radio.pas();
+        assertEquals(2, conexiune.conectari);
+        assertEquals("online", conexiune.publicate.get(0).text());
+    }
+
+    @Test
     void oprireaIeseDinBucla() throws Exception {
-        Radio real = new Radio("masina-1", conexiune, coada, Thread::sleep);
+        Radio real = new Radio("masina-1", conexiune, coada, pauzaFixa(), Thread::sleep);
         Thread fir = new Thread(real);
         fir.start();
         long limita = System.currentTimeMillis() + 2_000;

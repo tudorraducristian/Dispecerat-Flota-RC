@@ -1,7 +1,6 @@
 package ro.flota.simulator.masina;
 
 import java.time.Clock;
-import java.util.concurrent.BlockingDeque;
 import java.util.function.BooleanSupplier;
 import ro.flota.simulator.config.DefinitieMasina;
 import ro.flota.simulator.geo.Punct;
@@ -20,6 +19,7 @@ import ro.flota.simulator.simulare.Viteza;
 /**
  * Producătorul (D9): la fiecare bătaie mută mașina, calculează valorile și pune mesajele în coadă.
  * Nu știe nimic de rețea, ci doar dacă radioul e conectat, ca să marcheze din_buffer.
+ * Coada e un Buffer: cât radioul e offline, se umple, iar plină aruncă telemetria cea mai veche.
  */
 public final class Motor {
 
@@ -30,7 +30,7 @@ public final class Motor {
     private final DetectorSupraincalzire supraincalzire = new DetectorSupraincalzire();
     private final DetectorFranare franare = new DetectorFranare();
     private final Clock ceas;
-    private final BlockingDeque<Mesaj> coada;
+    private final Buffer coada;
     private final BooleanSupplier conectat;
     private final double secundePeTick;
     private double distanta;
@@ -38,7 +38,7 @@ public final class Motor {
     private long seq = 0;
 
     public Motor(DefinitieMasina def, Viteza viteza, Temperatura temperatura, Clock ceas,
-                 BlockingDeque<Mesaj> coada, BooleanSupplier conectat, double secundePeTick) {
+                 Buffer coada, BooleanSupplier conectat, double secundePeTick) {
         this.id = def.id();
         this.traseu = def.traseu();
         this.viteza = viteza;
@@ -58,14 +58,14 @@ public final class Motor {
         Punct p = traseu.punctLa(distanta);
         String ora = Ore.format(ceas.instant());
         seq++;
-        coada.offerLast(Mesaje.telemetrie(id, new Telemetrie(seq, ora,
+        coada.adauga(Mesaje.telemetrie(id, new Telemetrie(seq, ora,
                 rotunjit(p.lat(), 5), rotunjit(p.lon(), 5), rotunjit(v, 1), rotunjit(t, 1),
                 baterie(), !conectat.getAsBoolean())));
         if (supraincalzire.verifica(t)) {
-            coada.offerLast(Mesaje.alarma(id, new Alarma(TipAlarma.SUPRAINCALZIRE, ora, rotunjit(t, 1))));
+            coada.adauga(Mesaje.alarma(id, new Alarma(TipAlarma.SUPRAINCALZIRE, ora, rotunjit(t, 1))));
         }
         if (franare.verifica(v)) {
-            coada.offerLast(Mesaje.alarma(id, new Alarma(TipAlarma.FRANARE_BRUSCA, ora,
+            coada.adauga(Mesaje.alarma(id, new Alarma(TipAlarma.FRANARE_BRUSCA, ora,
                     rotunjit(franare.ultimaScadere(), 1))));
         }
     }
