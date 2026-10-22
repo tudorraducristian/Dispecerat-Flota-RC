@@ -117,8 +117,26 @@ Se completează în faza 4 (riscul R6) și se folosesc în scenariul prezentări
 
 | Ce | Valoarea măsurată | Data |
 |---|---|---|
-| `GAURA masina-5 10`: secunde până devine gri | | |
-| `GAURA masina-5 10`: mesaje pierdute | | |
-| `GAURA masina-5 10`: mesaje recuperate | | |
-| `TUNEL masina-3 15`: secunde până revine verde | | |
-| `GAURA masina-5 N`: cea mai lungă gaură fără pierderi | | |
+| `GAURA masina-5 10`: secunde până devine gri | 5,2 (6,5 · 5,2 · 5,0) | 2026-10-22 |
+| `GAURA masina-5 10`: mesaje pierdute | 5 (7 · 5 · 5) | 2026-10-22 |
+| `GAURA masina-5 10`: mesaje recuperate | 5 (3 · 5 · 6) | 2026-10-22 |
+| `TUNEL masina-3 15`: secunde până revine verde | 18,6 (18,1 · 19,1 · 18,6) | 2026-10-22 |
+| `GAURA masina-5 N`: cea mai lungă gaură fără pierderi | 6 secunde; la 7, o pierdere din 3 încercări | 2026-10-22 |
+
+În paranteză sînt cele trei încercări; în tabel e valoarea din mijloc.
+
+Măsurătorile din 2026-10-22 s-au făcut cu HiveMQ CE 2026.5 în locul lui
+Mosquitto, pe 127.0.0.1:1883, fiindcă mosquitto.org nu răspundea în ziua aceea.
+Secundele până la gri depind de cum numără broker-ul keepalive-ul, deci cu
+Mosquitto pot ieși puțin altfel.
+
+Tot atunci, verificările din faza 4:
+- un tunel de 60 de secunde cu `buffer.marime=20`: în buffer 20 de mesaje,
+  aruncate 68, iar serverul a numărat exact 68 de pierdute; revenirea, la 87 de
+  secunde, din cauza pauzei de reconectare care ajunsese spre 30;
+- simulatorul repornit: câte un „simulatorul a repornit” pentru fiecare mașină,
+  iar `pierdute` a rămas 0;
+- serverul pornit după simulator, cu `ultimul_seq` gol: `pierdute` a rămas 0
+  după 30 de secunde;
+- `INTARZIERE TOATE 500 200`: latența între 460 și 540 ms, fără mesaje
+  recuperate sau pierdute.
