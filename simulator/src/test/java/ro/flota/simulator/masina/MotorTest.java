@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -119,5 +120,52 @@ class MotorTest {
         assertEquals(TipMesaj.ALARMA, alarma.tip());
         assertEquals("FRANARE_BRUSCA", json(alarma).get("tip").asString());
         assertEquals(30.0, json(alarma).get("valoare").asDouble(), 1e-9);
+    }
+
+    private static byte[] comanda(String json) {
+        return json.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private Mesaj ultimaTelemetrie() {
+        return coada.continut().reversed().stream()
+                .filter(m -> m.tip() == TipMesaj.TELEMETRIE)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    @Test
+    void comandaSeExecutaLaUrmatoareaBatereIarConfirmareaIntraInCoada() {
+        Motor motor = motor(0, spre50(), normala(85), true);
+        motor.primesteComanda(comanda("{\"id\": 57, \"tip\": \"LIMITEAZA_VITEZA\", \"parametri\": {\"kmh\": 30}}"));
+        assertEquals(0, coada.marime(), "comanda nu se execută pe firul care o primește");
+        motor.tick();
+        Mesaj primul = coada.continut().getFirst();
+        assertEquals(TipMesaj.CONFIRMARE, primul.tip());
+        assertEquals(57, json(primul).get("comanda_id").asLong());
+    }
+
+    @Test
+    void intoarcereaMergeInapoiPanaLaStartSiStaPeLoc() {
+        Motor motor = motor(0.1, spre50(), normala(85), true); // 37,7 m după start
+        motor.tick();
+        motor.primesteComanda(comanda("{\"id\": 1, \"tip\": \"INTOARCE_LA_BAZA\", \"parametri\": {}}"));
+        for (int i = 0; i < 60; i++) {
+            motor.tick();
+        }
+        JsonNode ultima = json(ultimaTelemetrie());
+        assertEquals(46.0, ultima.get("lat").asDouble(), 1e-9);
+        assertEquals(23.0, ultima.get("lon").asDouble(), 1e-9);
+        assertEquals(0.0, ultima.get("viteza").asDouble(), 1e-9);
+    }
+
+    @Test
+    void sosireaLaBazaNuEsteFranareBrusca() {
+        Motor motor = motor(0.1, spre50(), normala(85), true);
+        motor.tick();
+        motor.primesteComanda(comanda("{\"id\": 1, \"tip\": \"INTOARCE_LA_BAZA\", \"parametri\": {}}"));
+        for (int i = 0; i < 60; i++) {
+            motor.tick();
+        }
+        assertTrue(coada.continut().stream().noneMatch(m -> m.tip() == TipMesaj.ALARMA));
     }
 }

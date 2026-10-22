@@ -1,6 +1,8 @@
 package ro.flota.simulator.masina;
 
 import java.time.Clock;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BooleanSupplier;
 import ro.flota.simulator.config.DefinitieMasina;
 import ro.flota.simulator.geo.Punct;
@@ -36,6 +38,12 @@ public final class Motor {
     private double distanta;
     private double secundeScurse = 0;
     private long seq = 0;
+    /** Comenzile vin pe firul clientului MQTT și așteaptă aici următoarea bătaie a motorului. */
+    private final Queue<byte[]> comenziPrimite = new ConcurrentLinkedQueue<>();
+    private final ExecutantComenzi executant;
+    private boolean spreBaza = false;
+    private boolean laBaza = false;
+    private double panaLaBaza;
 
     public Motor(DefinitieMasina def, Viteza viteza, Temperatura temperatura, Clock ceas,
                  Buffer coada, BooleanSupplier conectat, double secundePeTick) {
@@ -48,15 +56,32 @@ public final class Motor {
         this.conectat = conectat;
         this.secundePeTick = secundePeTick;
         this.distanta = def.start() * traseu.lungime();
+        this.executant = new ExecutantComenzi(id, viteza, this::intoarceLaBaza,
+                text -> System.out.printf("[%s] mesaj pentru șofer: %s%n", id, text));
     }
 
     public void tick() {
-        double v = viteza.tick();
+        String ora = Ore.format(ceas.instant());
+        executaComenzile(ora);
+        double v = laBaza ? 0 : viteza.tick();
         double t = temperatura.tick(v);
-        distanta = traseu.normalizeaza(distanta + v / 3.6 * secundePeTick);
+        double pas = v / 3.6 * secundePeTick;
+        if (spreBaza) {
+            panaLaBaza -= pas;
+            if (panaLaBaza <= 0) {
+                distanta = 0;
+                spreBaza = false;
+                laBaza = true;
+                v = 0;
+                System.out.printf("[%s] a ajuns la bază%n", id);
+            } else {
+                distanta = panaLaBaza;
+            }
+        } else if (!laBaza) {
+            distanta = traseu.normalizeaza(distanta + pas);
+        }
         secundeScurse += secundePeTick;
         Punct p = traseu.punctLa(distanta);
-        String ora = Ore.format(ceas.instant());
         seq++;
         coada.adauga(Mesaje.telemetrie(id, new Telemetrie(seq, ora,
                 rotunjit(p.lat(), 5), rotunjit(p.lon(), 5), rotunjit(v, 1), rotunjit(t, 1),
@@ -64,10 +89,32 @@ public final class Motor {
         if (supraincalzire.verifica(t)) {
             coada.adauga(Mesaje.alarma(id, new Alarma(TipAlarma.SUPRAINCALZIRE, ora, rotunjit(t, 1))));
         }
-        if (franare.verifica(v)) {
+        // Oprirea la bază nu e o frânare bruscă (D26).
+        if (!laBaza && franare.verifica(v)) {
             coada.adauga(Mesaje.alarma(id, new Alarma(TipAlarma.FRANARE_BRUSCA, ora,
                     rotunjit(franare.ultimaScadere(), 1))));
         }
+    }
+
+    /** Vine din orice fir, de obicei de la clientul MQTT. Se execută la următoarea bătaie. */
+    public void primesteComanda(byte[] payload) {
+        comenziPrimite.add(payload);
+    }
+
+    private void executaComenzile(String ora) {
+        byte[] comanda;
+        while ((comanda = comenziPrimite.poll()) != null) {
+            executant.executa(comanda, ora).ifPresent(coada::adauga);
+        }
+    }
+
+    /** INTOARCE_LA_BAZA (spec §4.2): înapoi pe traseu, cu distanța care scade până la primul punct (D26). */
+    private void intoarceLaBaza() {
+        if (laBaza) {
+            return;
+        }
+        spreBaza = true;
+        panaLaBaza = distanta;
     }
 
     /** Scade cu 1% pe minut, de la 100 la 5, apoi rămâne la 5. */
