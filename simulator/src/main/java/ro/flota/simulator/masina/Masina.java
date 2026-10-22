@@ -33,6 +33,7 @@ public final class Masina {
         Temperatura temperatura = new Temperatura(Aleator.din(random), Aleator.din(random), Temperatura.DE_BAZA);
         this.motor = new Motor(def, viteza, temperatura, ceas, coada, conexiune::conectata, perioadaMs / 1000.0);
         this.radio = new Radio(id, conexiune, coada, new PauzaReconectare(Aleator.din(random)), Thread::sleep);
+        conexiune.laComanda(motor::primesteComanda);
     }
 
     public void porneste() {

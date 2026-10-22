@@ -1,5 +1,6 @@
 package ro.flota.simulator.masina;
 
+import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
@@ -7,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import ro.flota.simulator.config.Setari;
 import ro.flota.simulator.mesaje.Mesaj;
 import ro.flota.simulator.mesaje.Mesaje;
@@ -21,6 +23,7 @@ public final class ConexiuneHiveMq implements Conexiune {
     private final int keepalive;
     private final Mqtt3BlockingClient client;
     private volatile boolean conectata = false;
+    private volatile Consumer<byte[]> laComanda = payload -> { };
 
     public ConexiuneHiveMq(String id, Setari setari) {
         this.id = id;
@@ -41,6 +44,9 @@ public final class ConexiuneHiveMq implements Conexiune {
                     conectata = false;
                 })
                 .buildBlocking();
+        // Comenzile păstrate de broker cât mașina a fost offline vin imediat după CONNACK, înainte de orice
+        // abonare nouă; filtrul global le prinde (ca la server, D22).
+        client.toAsync().publishes(MqttGlobalPublishFilter.ALL, p -> laComanda.accept(p.getPayloadAsBytes()));
     }
 
     @Override
@@ -55,6 +61,10 @@ public final class ConexiuneHiveMq implements Conexiune {
                         .payload("offline".getBytes(StandardCharsets.UTF_8))
                         .retain(true)
                         .applyWillPublish()
+                    .send();
+            // La fiecare conectare: un broker repornit fără persistență a uitat abonarea.
+            client.subscribeWith()
+                    .addSubscription().topicFilter(Mesaje.topic(id, "comenzi")).qos(MqttQos.AT_LEAST_ONCE).applySubscription()
                     .send();
         } catch (RuntimeException e) {
             throw new EroareConexiune(e.getMessage(), e);
@@ -101,5 +111,10 @@ public final class ConexiuneHiveMq implements Conexiune {
             case 2 -> MqttQos.EXACTLY_ONCE;
             default -> throw new IllegalArgumentException("QoS necunoscut: " + nivel);
         };
+    }
+
+    @Override
+    public void laComanda(Consumer<byte[]> ascultator) {
+        this.laComanda = ascultator;
     }
 }

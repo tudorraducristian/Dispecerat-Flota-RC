@@ -1,7 +1,9 @@
 package ro.flota.simulator.masina;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import ro.flota.simulator.mesaje.Mesaj;
 import ro.flota.simulator.mesaje.TipMesaj;
 
@@ -67,5 +69,17 @@ final class ConexiuneFalsa implements Conexiune {
     public synchronized void deconecteaza() {
         conectata = false;
         evenimente.add("deconectată");
+    }
+
+    private volatile Consumer<byte[]> laComanda = payload -> { };
+
+    @Override
+    public void laComanda(Consumer<byte[]> ascultator) {
+        laComanda = ascultator;
+    }
+
+    /** În teste: ca și cum broker-ul ar livra o comandă. */
+    void livreazaComanda(String json) {
+        laComanda.accept(json.getBytes(StandardCharsets.UTF_8));
     }
 }
