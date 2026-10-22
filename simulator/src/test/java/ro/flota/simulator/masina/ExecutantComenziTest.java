@@ -80,4 +80,27 @@ class ExecutantComenziTest {
         assertTrue(executant.executa(octeti("{\"tip\": \"INTOARCE_LA_BAZA\"}"), ORA).isEmpty());
         assertEquals(0, intoarceri.get());
     }
+
+    @Test
+    void mesajulAjungeLaSofer() {
+        JsonNode c = confirmare("{\"id\": 61, \"tip\": \"MESAJ_SOFER\", \"parametri\": {\"text\": \"Treci pe la bază\"}}");
+        assertEquals("EXECUTATA", c.get("rezultat").asString());
+        assertEquals(List.of("Treci pe la bază"), spuseSoferului);
+    }
+
+    @Test
+    void mesajulPreaLungEsteRespins() {
+        String lung = "x".repeat(201);
+        JsonNode c = confirmare("{\"id\": 62, \"tip\": \"MESAJ_SOFER\", \"parametri\": {\"text\": \"" + lung + "\"}}");
+        assertEquals("RESPINSA", c.get("rezultat").asString());
+        assertTrue(c.get("motiv").asString().contains("200"));
+        assertTrue(spuseSoferului.isEmpty());
+    }
+
+    @Test
+    void mesajulGolEsteRespins() {
+        JsonNode c = confirmare("{\"id\": 63, \"tip\": \"MESAJ_SOFER\", \"parametri\": {\"text\": \"  \"}}");
+        assertEquals("RESPINSA", c.get("rezultat").asString());
+        assertTrue(spuseSoferului.isEmpty());
+    }
 }

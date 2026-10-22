@@ -56,6 +56,7 @@ public final class ExecutantComenzi {
                 intoarceLaBaza.run();
                 yield null;
             }
+            case "MESAJ_SOFER" -> mesajSofer(parametri);
             default -> "tip necunoscut: " + tip;
         };
         Confirmare c = motiv == null ? Confirmare.executata(id, ora) : Confirmare.respinsa(id, ora, motiv);
@@ -70,6 +71,18 @@ public final class ExecutantComenzi {
             return "kmh în afara intervalului";
         }
         viteza.limiteaza(kmh.asInt());
+        return null;
+    }
+
+    private String mesajSofer(JsonNode p) {
+        JsonNode text = p.get("text");
+        if (text == null || !text.isString() || text.asString().isBlank()) {
+            return "text lipsă";
+        }
+        if (text.asString().length() > TEXT_MAXIM) {
+            return "text mai lung de " + TEXT_MAXIM + " de caractere";
+        }
+        sofer.accept(text.asString());
         return null;
     }
 }
