@@ -58,6 +58,25 @@ Fiecare pas e într-un terminal separat, din folderul ăsta.
 Se opresc cu Ctrl+C. La „Terminate batch job (Y/N)?” răspunzi Y. Scenariul
 complet de test e în `docs\scenariu-test.md`.
 
+## Ce găsești în UI
+
+- **Harta:**
+  - mașinile, colorate după stare: verde online, gri offline, portocaliu cu
+    vreme setată;
+  - panoul mașinii, comenzile și istoricul pe interval;
+  - traseul: linie plină pentru live, punctată pentru recuperat, lipsă pentru
+    pierdut.
+- **Rețea:** tunel, gaură, întârziere, bandă și normal; starea proxy-ului,
+  jurnalul, statisticile pe mașină și graficul de latență.
+- **Alarme:** lista, filtrată după „văzută”. Alarmele noi apar ca notificare pe
+  orice pagină.
+
+## Documente
+
+- `docs\scenariu-test.md`: scenariul de test, de la cap la coadă, și
+  măsurătorile.
+- `docs\scenariu-prezentare.md`: prezentarea, în 5 minute.
+
 ## Testele
 
 ```powershell
