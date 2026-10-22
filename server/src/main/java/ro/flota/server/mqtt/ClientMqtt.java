@@ -73,6 +73,24 @@ public class ClientMqtt implements ApplicationRunner, DisposableBean {
                 });
     }
 
+    public boolean conectat() {
+        return client.getState().isConnected();
+    }
+
+    /** Publică pe QoS 1 (spec §4.1, comenzile). Nu așteaptă; o eroare se scrie în log. */
+    public void publica(String topic, byte[] payload) {
+        client.publishWith()
+                .topic(topic)
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .payload(payload)
+                .send()
+                .whenComplete((rezultat, eroare) -> {
+                    if (eroare != null) {
+                        log.warn("N-am putut publica pe {}: {}", topic, eroare.getMessage());
+                    }
+                });
+    }
+
     /** Un mesaj stricat se notează și se ignoră; orice altă eroare nu oprește ascultarea (spec §6.1). */
     private void primeste(Mqtt3Publish publicare) {
         String topic = publicare.getTopic().toString();

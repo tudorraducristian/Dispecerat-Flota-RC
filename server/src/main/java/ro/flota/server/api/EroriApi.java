@@ -22,6 +22,11 @@ public class EroriApi {
         return raspuns(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(ServiciuIndisponibil.class)
+    ResponseEntity<Eroare> indisponibil(ServiciuIndisponibil e) {
+        return raspuns(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     static ResponseEntity<Eroare> raspuns(HttpStatus status, String mesaj) {
         return ResponseEntity.status(status).body(new Eroare(status.value(), mesaj));
     }
