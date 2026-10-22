@@ -1,10 +1,12 @@
 import { reactive } from 'vue'
 import { api } from './api.js'
 
-/** Tabla dispecerului: ce știe UI-ul acum despre fiecare mașină. O citesc toate componentele. */
+/** Tabla dispecerului: ce știe UI-ul acum despre flotă și despre rețea. O citesc toate componentele. */
 export const flota = reactive({
   conectat: false,
   masini: {}, // id → { id, zonaId, stare, ultimaVedere, recuperate, pierdute, pozitie }
+  vreme: {}, // id → descrierea de la proxy, de exemplu „TUNEL 12”
+  proxyDisponibil: true,
 })
 
 const ascultatori = new Set()
@@ -21,7 +23,7 @@ export async function incarcaMasini() {
   }
 }
 
-/** Contoarele unei mașini, din REST. Până la faza 5, panoul le cere la 2 secunde (D25). */
+/** Contoarele unei mașini, din REST. Până la Task 12, panoul le cere la 2 secunde (D25). */
 export async function actualizeazaContoare(id) {
   const m = await api.masina(id)
   const tabla = flota.masini[id]
@@ -29,6 +31,24 @@ export async function actualizeazaContoare(id) {
     tabla.recuperate = m.recuperate
     tabla.pierdute = m.pierdute
   }
+}
+
+/** Vremea fiecărei mașini, din STARE-ul proxy-ului. Dacă proxy-ul nu răspunde, o spune (spec §6.5). */
+export async function actualizeazaVremea() {
+  try {
+    const vreme = {}
+    for (const r of await api.stareRetea()) vreme[r.masina] = r.descriere
+    flota.vreme = vreme
+    flota.proxyDisponibil = true
+  } catch {
+    flota.proxyDisponibil = false
+  }
+}
+
+/** STARE la 3 secunde: tunelurile și găurile se termină singure, fără vreun eveniment (D26). */
+export function pornesteVremea() {
+  actualizeazaVremea()
+  setInterval(actualizeazaVremea, 3000)
 }
 
 /** Deschide canalul live. Dacă se închide, inclusiv când serverul e oprit, reîncearcă la 2 secunde. */
@@ -50,20 +70,36 @@ export function pornesteLive() {
   }
 }
 
+function aplica(tip, date) {
+  switch (tip) {
+    case 'POZITIE':
+      aplicaPozitie(date)
+      break
+    case 'STARE':
+      aplicaStare(date)
+      break
+    case 'EVENIMENT_RETEA':
+      actualizeazaVremea()
+      break
+  }
+}
+
 /** Orele vin ca text ISO; se compară ca momente, nu ca text: „03Z” și „03.120Z” s-ar încurca. */
 function maiNoua(a, b) {
   return !b || Date.parse(a) >= Date.parse(b)
 }
 
-function aplica(tip, date) {
+function aplicaPozitie(date) {
   const m = flota.masini[date.masinaId]
   if (!m) return
-  if (tip === 'POZITIE') {
-    // O poziție recuperată din buffer e mai veche; markerul rămâne pe cea mai nouă.
-    if (!m.pozitie || maiNoua(date.oraMasinii, m.pozitie.oraMasinii)) m.pozitie = date
-    m.ultimaVedere = date.oraSosirii
-  } else if (tip === 'STARE') {
-    m.stare = date.stare
-    m.ultimaVedere = date.ultimaVedere
-  }
+  // O poziție recuperată din buffer e mai veche; markerul rămâne pe cea mai nouă.
+  if (!m.pozitie || maiNoua(date.oraMasinii, m.pozitie.oraMasinii)) m.pozitie = date
+  m.ultimaVedere = date.oraSosirii
+}
+
+function aplicaStare(date) {
+  const m = flota.masini[date.masinaId]
+  if (!m) return
+  m.stare = date.stare
+  m.ultimaVedere = date.ultimaVedere
 }

@@ -7,7 +7,7 @@ import L from 'leaflet'
 import { flota } from '../live.js'
 import { segmente } from '../traseu.js'
 
-const CULORI = { ONLINE: '#2e7d32', OFFLINE: '#9e9e9e' }
+const CULORI = { ONLINE: '#2e7d32', OFFLINE: '#9e9e9e', VREME: '#ef6c00' }
 
 export default {
   name: 'HartaFlotei',
@@ -21,6 +21,12 @@ export default {
     return { flota }
   },
   watch: {
+    'flota.vreme': {
+      deep: true,
+      handler() {
+        this.deseneazaMasini()
+      },
+    },
     'flota.masini': {
       deep: true,
       handler() {
@@ -76,7 +82,10 @@ export default {
         })
       }
     },
+    /** Verde online, gri offline, portocaliu dacă e online, dar are vreme setată (spec §7). */
     culoare(m) {
+      const vreme = flota.vreme[m.id]
+      if (m.stare === 'ONLINE' && vreme && vreme !== 'NORMAL') return CULORI.VREME
       return CULORI[m.stare] ?? CULORI.OFFLINE
     },
     deseneazaZone() {

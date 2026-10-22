@@ -2,6 +2,8 @@
   <v-app>
     <v-app-bar color="primary" density="compact">
       <v-app-bar-title>Dispecerat flotă</v-app-bar-title>
+      <v-btn to="/" exact>Harta</v-btn>
+      <v-btn to="/retea">Rețea</v-btn>
       <template #append>
         <v-chip :color="flota.conectat ? 'success' : 'error'" variant="flat" size="small" class="mr-2">
           {{ flota.conectat ? 'live' : 'fără legătură cu serverul' }}
@@ -9,23 +11,22 @@
       </template>
     </v-app-bar>
     <v-main>
-      <PaginaHarta />
+      <router-view />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import PaginaHarta from './pagini/PaginaHarta.vue'
-import { flota, pornesteLive } from './live.js'
+import { flota, pornesteLive, pornesteVremea } from './live.js'
 
 export default {
   name: 'App',
-  components: { PaginaHarta },
   data() {
     return { flota }
   },
   mounted() {
     pornesteLive()
+    pornesteVremea()
   },
 }
 </script>

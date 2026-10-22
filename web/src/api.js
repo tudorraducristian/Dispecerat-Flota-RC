@@ -21,4 +21,7 @@ export const api = {
     return cere(`/api/masini/${id}/traseu?${parametri}`)
   },
   zone: () => cere('/api/zone'),
+  stareRetea: () => cere('/api/retea/stare'),
+  vreme: (cerere) => cere('/api/retea/vreme', { method: 'POST', body: JSON.stringify(cerere) }),
+  evenimente: () => cere('/api/retea/evenimente'),
 }
