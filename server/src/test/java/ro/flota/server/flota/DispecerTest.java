@@ -16,6 +16,7 @@ import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
 import ro.flota.server.reguli.RegulaOffline;
 import ro.flota.server.reguli.ReguliAlarma;
+import ro.flota.server.statistici.Statistici;
 
 class DispecerTest {
 
@@ -23,7 +24,7 @@ class DispecerTest {
 
     private final Masini masini = mock(Masini.class);
     private final CanalLive live = mock(CanalLive.class);
-    private final Dispecer dispecer = new Dispecer(mock(Pozitii.class), masini, mock(Alarme.class), mock(Comenzi.class), mock(ReguliAlarma.class), mock(RegulaOffline.class), live,
+    private final Dispecer dispecer = new Dispecer(mock(Pozitii.class), masini, mock(Alarme.class), mock(Comenzi.class), mock(ReguliAlarma.class), mock(RegulaOffline.class), mock(Statistici.class), live,
             Clock.fixed(ACUM, ZoneOffset.UTC));
 
     @Test

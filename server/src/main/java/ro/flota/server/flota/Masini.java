@@ -43,6 +43,13 @@ public class Masini {
                 .update();
     }
 
+    /** Doar contoarele, fără poziții: se cer o dată pe secundă, pentru STATISTICI. */
+    public List<ContoareDto> contoare() {
+        return jdbc.sql("SELECT id, recuperate, pierdute FROM masini ORDER BY CAST(SUBSTRING(id, 8) AS UNSIGNED)")
+                .query((rs, nr) -> new ContoareDto(rs.getString("id"), rs.getLong("recuperate"), rs.getLong("pierdute")))
+                .list();
+    }
+
     /**
      * Schimbă starea doar dacă e alta decât cea din bază și spune dacă a schimbat-o. Starea e un mesaj reținut,
      * deci broker-ul o trimite din nou la fiecare abonare; repetată, nu mută „văzută ultima dată” (D23).
