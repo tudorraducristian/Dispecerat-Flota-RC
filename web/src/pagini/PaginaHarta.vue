@@ -3,6 +3,7 @@
     <HartaFlotei class="harta" :zone="zone" :traseu="traseu" :selectata="selectata" @alege="alege" />
     <div class="lateral">
       <PanouMasina :masina="masinaSelectata" @inchide="alege(null)" />
+      <PanouComenzi v-if="masinaSelectata" :masina="masinaSelectata" />
       <ListaMasini :selectata="selectata" @alege="alege" />
     </div>
   </div>
@@ -11,13 +12,14 @@
 <script>
 import HartaFlotei from '../components/HartaFlotei.vue'
 import ListaMasini from '../components/ListaMasini.vue'
+import PanouComenzi from '../components/PanouComenzi.vue'
 import PanouMasina from '../components/PanouMasina.vue'
 import { api } from '../api.js'
 import { flota, asculta } from '../live.js'
 
 export default {
   name: 'PaginaHarta',
-  components: { HartaFlotei, ListaMasini, PanouMasina },
+  components: { HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
   data() {
     return { zone: [], selectata: null, traseu: [] }
   },

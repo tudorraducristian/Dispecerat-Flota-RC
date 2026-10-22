@@ -26,4 +26,6 @@ export const api = {
   evenimente: () => cere('/api/retea/evenimente'),
   alarme: (vazute) => cere('/api/alarme' + (vazute == null ? '' : `?vazute=${vazute}`)),
   marcheazaVazuta: (id) => cere(`/api/alarme/${id}`, { method: 'PATCH' }),
+  trimiteComanda: (id, cerere) => cere(`/api/masini/${id}/comenzi`, { method: 'POST', body: JSON.stringify(cerere) }),
+  comenzi: (id) => cere(`/api/masini/${id}/comenzi`),
 }
