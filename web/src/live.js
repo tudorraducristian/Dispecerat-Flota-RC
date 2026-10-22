@@ -7,6 +7,8 @@ export const flota = reactive({
   masini: {}, // id → { id, zonaId, stare, ultimaVedere, recuperate, pierdute, pozitie }
   vreme: {}, // id → descrierea de la proxy, de exemplu „TUNEL 12”
   proxyDisponibil: true,
+  statistici: [], // ultima listă primită pe STATISTICI
+  latentaFlotei: [], // media flotei, una pe secundă, ultimele 60
 })
 
 const ascultatori = new Set()
@@ -20,16 +22,6 @@ export function asculta(f) {
 export async function incarcaMasini() {
   for (const m of await api.masini()) {
     flota.masini[m.id] = { ...m, pozitie: m.ultimaPozitie }
-  }
-}
-
-/** Contoarele unei mașini, din REST. Până la Task 12, panoul le cere la 2 secunde (D25). */
-export async function actualizeazaContoare(id) {
-  const m = await api.masina(id)
-  const tabla = flota.masini[id]
-  if (tabla) {
-    tabla.recuperate = m.recuperate
-    tabla.pierdute = m.pierdute
   }
 }
 
@@ -81,6 +73,9 @@ function aplica(tip, date) {
     case 'EVENIMENT_RETEA':
       actualizeazaVremea()
       break
+    case 'STATISTICI':
+      aplicaStatistici(date)
+      break
   }
 }
 
@@ -102,4 +97,21 @@ function aplicaStare(date) {
   if (!m) return
   m.stare = date.stare
   m.ultimaVedere = date.ultimaVedere
+}
+
+const SECUNDE_GRAFIC = 60
+
+/** O dată pe secundă: contoarele fiecărei mașini și un punct nou în graficul de latență. */
+function aplicaStatistici(lista) {
+  flota.statistici = lista
+  for (const s of lista) {
+    const m = flota.masini[s.masinaId]
+    if (m) {
+      m.recuperate = s.recuperate
+      m.pierdute = s.pierdute
+    }
+  }
+  const latente = lista.map((s) => s.latentaMedieMs).filter((v) => v != null)
+  flota.latentaFlotei.push(latente.length ? latente.reduce((a, b) => a + b, 0) / latente.length : null)
+  if (flota.latentaFlotei.length > SECUNDE_GRAFIC) flota.latentaFlotei.shift()
 }

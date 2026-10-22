@@ -30,6 +30,12 @@
             </v-alert>
           </v-card-text>
         </v-card>
+        <v-card variant="outlined" class="mt-4">
+          <v-card-title>Latența medie a flotei, ultimele 60 de secunde</v-card-title>
+          <v-card-text>
+            <GraficLatenta :valori="flota.latentaFlotei" />
+          </v-card-text>
+        </v-card>
       </v-col>
 
       <v-col cols="12" md="7">
@@ -55,6 +61,23 @@
         </v-card>
 
         <v-card variant="outlined" class="mt-4">
+          <v-card-title>Live, pe mașină</v-card-title>
+          <v-table density="compact">
+            <thead>
+              <tr><th>Mașina</th><th>Mesaje/s</th><th>Latența, ms</th><th>Recuperate</th><th>Pierdute</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="s in flota.statistici" :key="s.masinaId">
+                <td>{{ s.masinaId }}</td>
+                <td>{{ s.mesajePeSecunda.toFixed(1) }}</td>
+                <td>{{ s.latentaMedieMs == null ? '—' : Math.round(s.latentaMedieMs) }}</td>
+                <td>{{ s.recuperate }}</td>
+                <td>{{ s.pierdute }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card>
+        <v-card variant="outlined" class="mt-4">
           <v-card-title>Jurnalul rețelei</v-card-title>
           <v-table density="compact">
             <thead>
@@ -76,10 +99,12 @@
 
 <script>
 import { api } from '../api.js'
+import GraficLatenta from '../components/GraficLatenta.vue'
 import { flota, asculta } from '../live.js'
 
 export default {
   name: 'PaginaRetea',
+  components: { GraficLatenta },
   data() {
     return { flota, tinta: 'TOATE', secunde: 15, ms: 500, variatie: 200, kbps: 64, raspuns: null, evenimente: [] }
   },

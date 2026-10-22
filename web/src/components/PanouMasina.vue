@@ -28,33 +28,12 @@
 </template>
 
 <script>
-import { actualizeazaContoare } from '../live.js'
-
 export default {
   name: 'PanouMasina',
   props: {
     masina: { type: Object, default: null },
   },
   emits: ['inchide'],
-  computed: {
-    idMasina() {
-      return this.masina ? this.masina.id : null
-    },
-  },
-  watch: {
-    idMasina: {
-      immediate: true,
-      handler(id) {
-        clearInterval(this.cronometru)
-        if (id) {
-          this.cronometru = setInterval(() => actualizeazaContoare(id).catch(() => {}), 2000)
-        }
-      },
-    },
-  },
-  beforeUnmount() {
-    clearInterval(this.cronometru)
-  },
   methods: {
     valoare(camp, zecimale) {
       const p = this.masina.pozitie
