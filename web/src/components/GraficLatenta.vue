@@ -59,15 +59,15 @@ export default {
   height: 160px;
 }
 .grila {
-  stroke: rgba(0, 0, 0, 0.12);
+  stroke: rgba(var(--v-theme-on-surface), 0.12);
 }
 .eticheta {
   font-size: 11px;
-  fill: rgba(0, 0, 0, 0.6);
+  fill: rgba(var(--v-theme-on-surface), 0.6);
 }
 .linie {
   fill: none;
-  stroke: #1565c0;
+  stroke: rgb(var(--v-theme-primary));
   stroke-width: 2;
 }
 </style>
