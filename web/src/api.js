@@ -24,4 +24,6 @@ export const api = {
   stareRetea: () => cere('/api/retea/stare'),
   vreme: (cerere) => cere('/api/retea/vreme', { method: 'POST', body: JSON.stringify(cerere) }),
   evenimente: () => cere('/api/retea/evenimente'),
+  alarme: (vazute) => cere('/api/alarme' + (vazute == null ? '' : `?vazute=${vazute}`)),
+  marcheazaVazuta: (id) => cere(`/api/alarme/${id}`, { method: 'PATCH' }),
 }
