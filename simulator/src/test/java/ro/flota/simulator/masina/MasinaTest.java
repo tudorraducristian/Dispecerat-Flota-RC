@@ -14,7 +14,7 @@ import ro.flota.simulator.testutil.Trasee;
 
 class MasinaTest {
 
-    private static final Setari RAPID = new Setari("127.0.0.1", 1883, 5, 100);
+    private static final Setari RAPID = new Setari("127.0.0.1", 1883, 5, 100, 300);
     private final DefinitieMasina def = new DefinitieMasina("masina-1", Trasee.patrat(), 0.0, "z1");
 
     private static List<String> ultimele2(List<String> evenimente) {

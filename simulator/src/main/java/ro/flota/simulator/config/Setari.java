@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /** Setările de rețea ale simulatorului, din simulator.properties. */
-public record Setari(String brokerHost, int brokerPort, int keepaliveSecunde, long perioadaMs) {
+public record Setari(String brokerHost, int brokerPort, int keepaliveSecunde, long perioadaMs, int marimeBuffer) {
 
     public static Setari implicite() {
         Properties p = new Properties();
@@ -28,7 +28,8 @@ public record Setari(String brokerHost, int brokerPort, int keepaliveSecunde, lo
                 obligatoriu(p, "broker.host"),
                 intreg(p, "broker.port", 1, 65_535),
                 intreg(p, "keepalive.secunde", 1, 3_600),
-                intreg(p, "perioada.ms", 10, 60_000));
+                intreg(p, "perioada.ms", 10, 60_000),
+                intreg(p, "buffer.marime", 10, 100_000));
     }
 
     private static String obligatoriu(Properties p, String cheie) {

@@ -15,12 +15,13 @@ class SetariTest {
         p.setProperty("broker.port", "1883");
         p.setProperty("keepalive.secunde", "5");
         p.setProperty("perioada.ms", "1000");
+        p.setProperty("buffer.marime", "300");
         return p;
     }
 
     @Test
     void citesteToateCheile() {
-        assertEquals(new Setari("127.0.0.1", 1883, 5, 1000), Setari.din(bune()));
+        assertEquals(new Setari("127.0.0.1", 1883, 5, 1000, 300), Setari.din(bune()));
     }
 
     @Test
@@ -48,6 +49,14 @@ class SetariTest {
 
     @Test
     void fisierulDinResurseTrecePrinProxy() {
-        assertEquals(new Setari("127.0.0.1", 1884, 5, 1000), Setari.implicite());
+        assertEquals(new Setari("127.0.0.1", 1884, 5, 1000, 300), Setari.implicite());
+    }
+
+    @Test
+    void bufferulPreaMicEsteRefuzat() {
+        Properties p = bune();
+        p.setProperty("buffer.marime", "5");
+        String mesaj = assertThrows(IllegalArgumentException.class, () -> Setari.din(p)).getMessage();
+        assertTrue(mesaj.contains("buffer.marime"), mesaj);
     }
 }
