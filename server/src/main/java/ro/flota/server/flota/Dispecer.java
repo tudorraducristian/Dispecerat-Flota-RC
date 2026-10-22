@@ -10,6 +10,7 @@ import ro.flota.server.comenzi.Comenzi;
 import ro.flota.server.date.Punct;
 import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
+import ro.flota.server.reguli.RegulaOffline;
 import ro.flota.server.reguli.ReguliAlarma;
 
 /**
@@ -26,15 +27,17 @@ public class Dispecer {
     private final Alarme alarme;
     private final Comenzi comenzi;
     private final ReguliAlarma reguli;
+    private final RegulaOffline regulaOffline;
     private final CanalLive live;
     private final Clock ceas;
 
-    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, Comenzi comenzi, ReguliAlarma reguli, CanalLive live, Clock ceas) {
+    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, Comenzi comenzi, ReguliAlarma reguli, RegulaOffline regulaOffline, CanalLive live, Clock ceas) {
         this.pozitii = pozitii;
         this.masini = masini;
         this.alarme = alarme;
         this.comenzi = comenzi;
         this.reguli = reguli;
+        this.regulaOffline = regulaOffline;
         this.live = live;
         this.ceas = ceas;
     }
@@ -84,6 +87,7 @@ public class Dispecer {
         if (masini.schimbaStare(s.masinaId(), s.online(), acum)) {
             live.trimite("STARE", new StareMasinaDto(s.masinaId(), s.online() ? "ONLINE" : "OFFLINE", acum));
         }
+        regulaOffline.stare(s.masinaId(), s.online(), acum);
     }
 
     static String detalii(MesajPrimit.Alarma a) {
