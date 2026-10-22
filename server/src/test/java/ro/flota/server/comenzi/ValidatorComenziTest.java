@@ -48,4 +48,21 @@ class ValidatorComenziTest {
     void tipLipsaEsteRefuzat() {
         assertTrue(eroare(null, "{}").contains("tipul"));
     }
+
+    @Test
+    void mesajSoferBun() {
+        assertEquals(JSON.readTree("{\"text\": \"Treci pe la bază\"}"),
+                ValidatorComenzi.verifica(cerere("MESAJ_SOFER", "{\"text\": \"Treci pe la bază\"}")));
+    }
+
+    @Test
+    void mesajSoferPreaLung() {
+        assertTrue(eroare("MESAJ_SOFER", "{\"text\": \"" + "x".repeat(201) + "\"}").contains("200"));
+    }
+
+    @Test
+    void mesajSoferGol() {
+        assertTrue(eroare("MESAJ_SOFER", "{\"text\": \" \"}").contains("text"));
+        assertTrue(eroare("MESAJ_SOFER", "{}").contains("text"));
+    }
 }

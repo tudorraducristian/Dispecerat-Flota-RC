@@ -3,6 +3,7 @@ package ro.flota.server.comenzi;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -33,6 +34,13 @@ public class Comenzi {
                 .param("ora", Ore.ts(ora))
                 .update(cheie);
         return new ComandaDto(cheie.getKey().longValue(), masinaId, tip, parametri, ora, null, "TRIMISA", null);
+    }
+
+    public List<ComandaDto> pentruMasina(String masinaId) {
+        return jdbc.sql("SELECT * FROM comenzi WHERE masina_id = :masina ORDER BY id DESC LIMIT 50")
+                .param("masina", masinaId)
+                .query(this::rand)
+                .list();
     }
 
     ComandaDto rand(ResultSet rs, int nr) throws SQLException {

@@ -35,6 +35,16 @@ public final class ValidatorComenzi {
             case "INTOARCE_LA_BAZA" -> {
                 // fără parametri
             }
+            case "MESAJ_SOFER" -> {
+                JsonNode text = p.get("text");
+                if (text == null || !text.isString() || text.asString().isBlank()) {
+                    throw new CerereGresita("lipsește textul mesajului");
+                }
+                if (text.asString().length() > TEXT_MAXIM) {
+                    throw new CerereGresita("textul are peste 200 de caractere");
+                }
+                curati.put("text", text.asString());
+            }
             default -> throw new CerereGresita("tip de comandă necunoscut: " + cerere.tip());
         }
         return curati;
