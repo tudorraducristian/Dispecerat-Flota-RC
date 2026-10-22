@@ -71,4 +71,35 @@ class ReguliAlarmaTest {
     void oMasinaFaraZonaNuDaAlarme() {
         assertEquals(List.of(), reguli.verifica("masina-99", AFARA, 200));
     }
+
+    @Test
+    void vitezaPesteLimitaDaOAlarma() {
+        assertEquals(List.of(), tipuri(INAUNTRU, 40));
+        assertEquals(List.of("VITEZA_PESTE_LIMITA"), tipuri(INAUNTRU, 52));
+    }
+
+    @Test
+    void catRamanePesteLimitaNuMaiDaAlarme() {
+        tipuri(INAUNTRU, 52);
+        assertEquals(List.of(), tipuri(INAUNTRU, 60));
+        assertEquals(List.of(), tipuri(INAUNTRU, 55));
+    }
+
+    @Test
+    void vitezaSeRearmeazaSubLimita() {
+        tipuri(INAUNTRU, 52);
+        tipuri(INAUNTRU, 49);
+        assertEquals(List.of("VITEZA_PESTE_LIMITA"), tipuri(INAUNTRU, 52));
+    }
+
+    @Test
+    void exactLaLimitaNuEPeste() {
+        assertEquals(List.of(), tipuri(INAUNTRU, 50));
+    }
+
+    @Test
+    void detaliileSpunVitezaSiLimita() {
+        String detalii = reguli.verifica("masina-3", INAUNTRU, 52).get(0).detalii();
+        assertTrue(detalii.contains("52.0") && detalii.contains("50"), detalii);
+    }
 }
