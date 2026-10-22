@@ -17,6 +17,7 @@ public final class Viteza {
     private final Aleator pentruFranare;
     private double viteza;
     private double tinta;
+    private double limita = Double.POSITIVE_INFINITY;
     private int secundePanaLaTintaNoua = 0;
 
     public Viteza(Aleator pentruTinta, Aleator pentruFranare, double vitezaInitiala) {
@@ -31,6 +32,7 @@ public final class Viteza {
             tinta = pentruTinta.urmator() < SANSA_TINTA_90 ? 90.0 : 30.0 + 40.0 * pentruTinta.urmator();
             secundePanaLaTintaNoua = SECUNDE_PE_TINTA;
         }
+        tinta = Math.min(tinta, limita);
         secundePanaLaTintaNoua--;
         if (viteza >= VITEZA_MINIMA_FRANARE && pentruFranare.urmator() < SANSA_FRANARE) {
             viteza -= SCADERE_FRANARE;
@@ -38,6 +40,12 @@ public final class Viteza {
             viteza += Math.max(-PAS_MAXIM, Math.min(PAS_MAXIM, tinta - viteza));
         }
         return viteza;
+    }
+
+    /** LIMITEAZA_VITEZA (spec §4.2): ținta de acum și toate cele viitoare nu mai trec de limită. */
+    public void limiteaza(double kmh) {
+        limita = kmh;
+        tinta = Math.min(tinta, limita);
     }
 
     public double viteza() {

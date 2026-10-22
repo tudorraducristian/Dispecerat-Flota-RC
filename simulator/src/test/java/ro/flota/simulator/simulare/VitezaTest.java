@@ -66,4 +66,16 @@ class VitezaTest {
         Viteza v = new Viteza(new AleatorScriptat(0.99, 0.5, 0.5), new AleatorScriptat(0.99, 0.0), 20);
         assertEquals(25.0, v.tick(), 1e-9);
     }
+
+    @Test
+    void limitaTaieTintaDeAcumSiPeCeleViitoare() {
+        Viteza v = new Viteza(new AleatorScriptat(0.99, 0.05, 0.05), FARA_FRANARE, 0); // ținta 90, apoi tot 90
+        v.tick();
+        v.limiteaza(50);
+        assertEquals(50.0, v.tinta(), 1e-9);
+        for (int i = 0; i < 30; i++) {
+            v.tick(); // la a 31-a secundă vine o țintă nouă
+        }
+        assertEquals(50.0, v.tinta(), 1e-9);
+    }
 }
