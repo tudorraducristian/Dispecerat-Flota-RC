@@ -108,4 +108,24 @@ class DecodorTest {
     void stareaGoalaEsteRefuzata() {
         assertTrue(motiv("flota/masina-3/stare", "").contains("stare necunoscută"));
     }
+
+    @Test
+    void confirmareaExecutata() throws MesajInvalid {
+        assertEquals(new MesajPrimit.Confirmare("masina-3", 57, Instant.parse("2026-12-10T10:15:04.002Z"), "EXECUTATA", null),
+                decodeaza("flota/masina-3/confirmari",
+                        "{\"comanda_id\": 57, \"ora\": \"2026-12-10T10:15:04.002Z\", \"rezultat\": \"EXECUTATA\"}"));
+    }
+
+    @Test
+    void confirmareaRespinsaAreMotiv() throws MesajInvalid {
+        MesajPrimit.Confirmare c = (MesajPrimit.Confirmare) decodeaza("flota/masina-3/confirmari",
+                "{\"comanda_id\": 58, \"ora\": \"2026-12-10T10:15:04.002Z\", \"rezultat\": \"RESPINSA\", \"motiv\": \"kmh în afara intervalului\"}");
+        assertEquals("kmh în afara intervalului", c.motiv());
+    }
+
+    @Test
+    void rezultatulNecunoscutEsteRefuzat() {
+        assertTrue(motiv("flota/masina-3/confirmari",
+                "{\"comanda_id\": 59, \"ora\": \"2026-12-10T10:15:04.002Z\", \"rezultat\": \"POATE\"}").contains("POATE"));
+    }
 }

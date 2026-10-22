@@ -65,6 +65,7 @@ public class ClientMqtt implements ApplicationRunner, DisposableBean {
                 .addSubscription().topicFilter("flota/+/telemetrie").qos(MqttQos.AT_MOST_ONCE).applySubscription()
                 .addSubscription().topicFilter("flota/+/alarma").qos(MqttQos.EXACTLY_ONCE).applySubscription()
                 .addSubscription().topicFilter("flota/+/stare").qos(MqttQos.AT_LEAST_ONCE).applySubscription()
+                .addSubscription().topicFilter("flota/+/confirmari").qos(MqttQos.AT_LEAST_ONCE).applySubscription()
                 .send()
                 .whenComplete((ack, eroare) -> {
                     if (eroare != null) {

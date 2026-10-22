@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -41,6 +42,27 @@ public class Comenzi {
                 .param("masina", masinaId)
                 .query(this::rand)
                 .list();
+    }
+
+    /**
+     * Comanda trece în CONFIRMATA sau RESPINSA doar dacă era TRIMISA (spec §6.3). A doua confirmare
+     * nu mai găsește niciun rând de schimbat: asta e idempotența, garantată chiar de MySQL.
+     */
+    public boolean confirmaDacaTrimisa(long id, String masinaId, String stare, Instant ora, String motiv) {
+        int schimbate = jdbc.sql("""
+                        UPDATE comenzi SET stare = :stare, ora_confirmarii = :ora, motiv = :motiv
+                        WHERE id = :id AND masina_id = :masina AND stare = 'TRIMISA'""")
+                .param("stare", stare)
+                .param("ora", Ore.ts(ora))
+                .param("motiv", motiv)
+                .param("id", id)
+                .param("masina", masinaId)
+                .update();
+        return schimbate == 1;
+    }
+
+    public Optional<ComandaDto> una(long id) {
+        return jdbc.sql("SELECT * FROM comenzi WHERE id = :id").param("id", id).query(this::rand).optional();
     }
 
     ComandaDto rand(ResultSet rs, int nr) throws SQLException {

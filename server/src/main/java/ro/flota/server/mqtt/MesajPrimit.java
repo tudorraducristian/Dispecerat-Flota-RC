@@ -19,4 +19,8 @@ public sealed interface MesajPrimit {
     /** online sau offline; offline poate veni și de la broker, din Last Will. */
     record Stare(String masinaId, boolean online) implements MesajPrimit {
     }
+
+    /** Răspunsul mașinii la o comandă: EXECUTATA sau RESPINSA, cu motiv. */
+    record Confirmare(String masinaId, long comandaId, Instant ora, String rezultat, String motiv) implements MesajPrimit {
+    }
 }

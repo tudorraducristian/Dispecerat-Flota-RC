@@ -40,6 +40,7 @@ public class Decodor {
             case "telemetrie" -> telemetrie(id, obiect(payload));
             case "alarma" -> alarma(id, obiect(payload));
             case "stare" -> stare(id, payload);
+            case "confirmari" -> confirmare(id, obiect(payload));
             default -> throw new MesajInvalid("canal necunoscut: " + parti[2]);
         };
     }
@@ -64,6 +65,16 @@ public class Decodor {
             case "offline" -> new MesajPrimit.Stare(id, false);
             default -> throw new MesajInvalid("stare necunoscută: \"" + text + "\"");
         };
+    }
+
+    private static MesajPrimit.Confirmare confirmare(String id, JsonNode j) throws MesajInvalid {
+        String rezultat = text(j, "rezultat");
+        if (!rezultat.equals("EXECUTATA") && !rezultat.equals("RESPINSA")) {
+            throw new MesajInvalid("rezultat necunoscut: " + rezultat);
+        }
+        JsonNode motiv = j.get("motiv");
+        return new MesajPrimit.Confirmare(id, intreg(j, "comanda_id"), ora(j, "ora"), rezultat,
+                motiv != null && motiv.isString() ? motiv.asString() : null);
     }
 
     private JsonNode obiect(byte[] payload) throws MesajInvalid {

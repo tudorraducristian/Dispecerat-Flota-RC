@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
+import ro.flota.server.comenzi.Comenzi;
 import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
 
@@ -20,7 +21,7 @@ class DispecerTest {
 
     private final Masini masini = mock(Masini.class);
     private final CanalLive live = mock(CanalLive.class);
-    private final Dispecer dispecer = new Dispecer(mock(Pozitii.class), masini, mock(Alarme.class), live,
+    private final Dispecer dispecer = new Dispecer(mock(Pozitii.class), masini, mock(Alarme.class), mock(Comenzi.class), live,
             Clock.fixed(ACUM, ZoneOffset.UTC));
 
     @Test

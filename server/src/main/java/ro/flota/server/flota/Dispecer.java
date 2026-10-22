@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ro.flota.server.comenzi.Comenzi;
 import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
 
@@ -21,13 +22,15 @@ public class Dispecer {
     private final Pozitii pozitii;
     private final Masini masini;
     private final Alarme alarme;
+    private final Comenzi comenzi;
     private final CanalLive live;
     private final Clock ceas;
 
-    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, CanalLive live, Clock ceas) {
+    public Dispecer(Pozitii pozitii, Masini masini, Alarme alarme, Comenzi comenzi, CanalLive live, Clock ceas) {
         this.pozitii = pozitii;
         this.masini = masini;
         this.alarme = alarme;
+        this.comenzi = comenzi;
         this.live = live;
         this.ceas = ceas;
     }
@@ -38,6 +41,7 @@ public class Dispecer {
             case MesajPrimit.Telemetrie t -> laTelemetrie(t);
             case MesajPrimit.Alarma a -> laAlarma(a);
             case MesajPrimit.Stare s -> laStare(s);
+            case MesajPrimit.Confirmare c -> laConfirmare(c);
         }
     }
 
@@ -80,5 +84,16 @@ public class Dispecer {
             case "FRANARE_BRUSCA" -> String.format(Locale.ROOT, "viteza a scăzut cu %.1f km/h într-o secundă", a.valoare());
             default -> String.format(Locale.ROOT, "valoarea %.1f", a.valoare());
         };
+    }
+
+    /** Pe QoS 1, aceeași confirmare poate veni de două ori; doar prima schimbă ceva (spec §6.3). */
+    private void laConfirmare(MesajPrimit.Confirmare c) {
+        String stare = c.rezultat().equals("EXECUTATA") ? "CONFIRMATA" : "RESPINSA";
+        if (comenzi.confirmaDacaTrimisa(c.comandaId(), c.masinaId(), stare, c.ora(), c.motiv())) {
+            comenzi.una(c.comandaId()).ifPresent(comanda -> live.trimite("CONFIRMARE", comanda));
+        } else {
+            log.info("{}: confirmarea comenzii {} a mai venit o dată sau nu se potrivește; o ignor",
+                    c.masinaId(), c.comandaId());
+        }
     }
 }
