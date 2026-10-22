@@ -3,6 +3,8 @@ package ro.flota.server.flota;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ro.flota.server.live.CanalLive;
 import ro.flota.server.mqtt.MesajPrimit;
@@ -13,6 +15,8 @@ import ro.flota.server.mqtt.MesajPrimit;
  */
 @Service
 public class Dispecer {
+
+    private static final Logger log = LoggerFactory.getLogger(Dispecer.class);
 
     private final Pozitii pozitii;
     private final Masini masini;
@@ -37,11 +41,22 @@ public class Dispecer {
         }
     }
 
+    /**
+     * Citește ultimul seq, hotărăște ce lipsește și scrie contoarele. Între citire și scriere nu se poate
+     * strecura alt mesaj al aceleiași mașini: toate trec pe firul unic al lui ClientMqtt (D22).
+     */
     private void laTelemetrie(MesajPrimit.Telemetrie t) {
         Instant sosire = ceas.instant();
         PozitieDto pozitie = PozitieDto.din(t, sosire);
         pozitii.salveaza(pozitie);
-        masini.vazuta(t.masinaId(), sosire);
+        Long ultimul = masini.ultimulSeq(t.masinaId());
+        Secventa secventa = Secventa.dupa(ultimul, t.seq());
+        if (secventa.repornire()) {
+            log.info("{}: simulatorul a repornit (seq {} după {})", t.masinaId(), t.seq(), ultimul);
+        } else if (secventa.pierdute() > 0) {
+            log.info("{}: lipsesc {} mesaje înainte de seq {}", t.masinaId(), secventa.pierdute(), t.seq());
+        }
+        masini.dupaTelemetrie(t.masinaId(), t.seq(), secventa.pierdute(), t.dinBuffer(), sosire);
         live.trimite("POZITIE", pozitie);
     }
 

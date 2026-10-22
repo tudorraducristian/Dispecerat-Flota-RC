@@ -20,8 +20,24 @@ public class Masini {
         this.pozitii = pozitii;
     }
 
-    public void vazuta(String id, Instant ora) {
-        jdbc.sql("UPDATE masini SET ultima_vedere = :ora WHERE id = :id")
+    /** Ultimul număr de ordine văzut, sau null dacă mașina n-a trimis încă telemetrie (D25). */
+    public Long ultimulSeq(String id) {
+        List<Long> rezultat = jdbc.sql("SELECT ultimul_seq FROM masini WHERE id = :id")
+                .param("id", id)
+                .query((rs, nr) -> rs.getObject("ultimul_seq", Long.class))
+                .list();
+        return rezultat.isEmpty() ? null : rezultat.get(0);
+    }
+
+    /** Contoarele după o telemetrie, într-un singur UPDATE (spec §6.3). */
+    public void dupaTelemetrie(String id, long seq, long pierdute, boolean recuperata, Instant ora) {
+        jdbc.sql("""
+                        UPDATE masini SET ultimul_seq = :seq, pierdute = pierdute + :pierdute,
+                                          recuperate = recuperate + :recuperata, ultima_vedere = :ora
+                        WHERE id = :id""")
+                .param("seq", seq)
+                .param("pierdute", pierdute)
+                .param("recuperata", recuperata ? 1 : 0)
                 .param("ora", Ore.ts(ora))
                 .param("id", id)
                 .update();
