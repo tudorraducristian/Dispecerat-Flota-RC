@@ -4,12 +4,15 @@
     <div class="lateral">
       <PanouMasina :masina="masinaSelectata" @inchide="alege(null)" />
       <PanouComenzi v-if="masinaSelectata" :masina="masinaSelectata" />
+      <AlegereInterval v-if="masinaSelectata" @interval="arataInterval" @live="alege(selectata)" />
+      <v-alert v-if="eroareTraseu" type="error" density="compact" class="ma-2">{{ eroareTraseu }}</v-alert>
       <ListaMasini :selectata="selectata" @alege="alege" />
     </div>
   </div>
 </template>
 
 <script>
+import AlegereInterval from '../components/AlegereInterval.vue'
 import HartaFlotei from '../components/HartaFlotei.vue'
 import ListaMasini from '../components/ListaMasini.vue'
 import PanouComenzi from '../components/PanouComenzi.vue'
@@ -19,9 +22,9 @@ import { flota, asculta } from '../live.js'
 
 export default {
   name: 'PaginaHarta',
-  components: { HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
+  components: { AlegereInterval, HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
   data() {
-    return { zone: [], selectata: null, traseu: [] }
+    return { zone: [], selectata: null, traseu: [], istoric: false, eroareTraseu: null }
   },
   computed: {
     masinaSelectata() {
@@ -30,7 +33,7 @@ export default {
   },
   async mounted() {
     this.opresteAscultarea = asculta((tip, date) => {
-      if (tip === 'POZITIE' && date.masinaId === this.selectata) this.traseu.push(date)
+      if (tip === 'POZITIE' && !this.istoric && date.masinaId === this.selectata) this.traseu.push(date)
     })
     this.zone = await api.zone()
   },
@@ -38,13 +41,27 @@ export default {
     this.opresteAscultarea()
   },
   methods: {
-    /** Traseul vine din REST, ultimele 5 minute; după aceea crește din canalul live. */
+    /** Ultimele 5 minute din REST, apoi traseul crește din canalul live. */
     async alege(id) {
       this.selectata = id
+      this.istoric = false
+      this.eroareTraseu = null
       this.traseu = []
       if (!id) return
       const traseu = await api.traseu(id)
-      if (this.selectata === id) this.traseu = traseu
+      if (this.selectata === id && !this.istoric) this.traseu = traseu
+    },
+    /** Modul istoric: doar intervalul cerut, fără poziții live adăugate. */
+    async arataInterval({ de, pana }) {
+      const id = this.selectata
+      this.istoric = true
+      this.eroareTraseu = null
+      try {
+        const traseu = await api.traseu(id, de, pana)
+        if (this.selectata === id) this.traseu = traseu
+      } catch (e) {
+        this.eroareTraseu = e.message
+      }
     },
   },
 }
