@@ -6,7 +6,7 @@
       <v-text-field v-model="pana" type="datetime-local" label="Până la" density="compact" />
       <div class="d-flex ga-2">
         <v-btn :disabled="!de || !pana" @click="arata">Arată</v-btn>
-        <v-btn variant="text" @click="$emit('live')">Înapoi la live</v-btn>
+        <v-btn variant="text" @click="$emit('live')">Înapoi la live, ultimele {{ minute }} minute</v-btn>
       </div>
     </v-card-text>
   </v-card>
@@ -15,6 +15,8 @@
 <script>
 export default {
   name: 'AlegereInterval',
+  /** minute vine din setări, traseu_minute (spec §16.3). */
+  props: { minute: { type: Number, default: 5 } },
   emits: ['interval', 'live'],
   data() {
     return { de: '', pana: '' }

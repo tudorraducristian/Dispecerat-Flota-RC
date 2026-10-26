@@ -4,7 +4,7 @@
     <div class="lateral">
       <PanouMasina :masina="masinaSelectata" @inchide="alege(null)" />
       <PanouComenzi v-if="masinaSelectata" :masina="masinaSelectata" />
-      <AlegereInterval v-if="masinaSelectata" @interval="arataInterval" @live="alege(selectata)" />
+      <AlegereInterval v-if="masinaSelectata" :minute="traseuMinute" @interval="arataInterval" @live="alege(selectata)" />
       <v-alert v-if="eroareTraseu" type="error" density="compact" class="ma-2">{{ eroareTraseu }}</v-alert>
       <ListaMasini :selectata="selectata" @alege="alege" />
     </div>
@@ -24,7 +24,7 @@ export default {
   name: 'PaginaHarta',
   components: { AlegereInterval, HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
   data() {
-    return { zone: [], selectata: null, traseu: [], istoric: false, eroareTraseu: null }
+    return { zone: [], selectata: null, traseu: [], istoric: false, eroareTraseu: null, traseuMinute: 5 }
   },
   computed: {
     masinaSelectata() {
@@ -47,6 +47,8 @@ export default {
       if (tip === 'POZITIE' && !this.istoric && date.masinaId === this.selectata) this.traseu.push(date)
     })
     this.incarcaZone()
+    // Setările se citesc o dată; fără ele rămâne implicitul de 5 minute (spec §16.3).
+    api.setari().then((s) => (this.traseuMinute = s.traseuMinute)).catch(() => {})
   },
   beforeUnmount() {
     this.opresteAscultarea()
@@ -60,7 +62,7 @@ export default {
         console.warn('nu pot încărca zonele:', e.message)
       }
     },
-    /** Ultimele 5 minute din REST, apoi traseul crește din canalul live. */
+    /** Ultimele traseuMinute minute din REST, după setări, apoi traseul crește din canalul live. */
     async alege(id) {
       this.selectata = id
       this.istoric = false
@@ -68,7 +70,8 @@ export default {
       this.traseu = []
       if (!id) return
       try {
-        const traseu = await api.traseu(id)
+        const de = new Date(Date.now() - this.traseuMinute * 60_000).toISOString()
+        const traseu = await api.traseu(id, de)
         if (this.selectata === id && !this.istoric) this.traseu = traseu
       } catch (e) {
         if (this.selectata === id) this.eroareTraseu = `nu pot încărca traseul: ${e.message}`

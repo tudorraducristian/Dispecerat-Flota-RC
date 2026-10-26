@@ -6,17 +6,25 @@
     </v-main>
     <template v-else>
       <v-app-bar color="primary" density="compact">
+        <v-app-bar-nav-icon @click="meniu = !meniu" />
         <v-app-bar-title>Dispecerat flotă</v-app-bar-title>
-        <v-btn to="/" exact>Harta</v-btn>
-        <v-btn to="/retea">Rețea</v-btn>
-        <v-btn to="/alarme">Alarme</v-btn>
         <template #append>
           <v-chip :color="flota.conectat ? 'success' : 'error'" variant="flat" size="small" class="mr-2">
             {{ flota.conectat ? 'live' : 'fără legătură cu serverul' }}
           </v-chip>
-          <v-btn variant="text" @click="iesire">Ieșire</v-btn>
+          <span v-if="sesiune.nume" class="text-body-2 mr-2">{{ sesiune.nume }} · {{ sesiune.rol }}</span>
+          <v-btn variant="text" prepend-icon="mdi-logout" @click="iesire">Ieșire</v-btn>
         </template>
       </v-app-bar>
+      <v-navigation-drawer v-model="meniu" temporary>
+        <v-list nav>
+          <v-list-item to="/" exact prepend-icon="mdi-map" title="Harta" />
+          <v-list-item to="/retea" prepend-icon="mdi-access-point-network" title="Rețea" />
+          <v-list-item to="/alarme" prepend-icon="mdi-bell" title="Alarme" />
+          <v-list-item to="/setari" prepend-icon="mdi-cog" title="Setări" />
+          <v-list-item v-if="admin" to="/conturi" prepend-icon="mdi-account-multiple" title="Conturi" />
+        </v-list>
+      </v-navigation-drawer>
       <v-main>
         <router-view />
       </v-main>
@@ -33,12 +41,18 @@
 <script>
 import { api } from './api.js'
 import { flota, asculta, pornesteLive, opresteLive, pornesteVremea, opresteVremea } from './live.js'
-import { sesiune, uita, asiguraUtilizatorul } from './sesiune.js'
+import { sesiune, uita, asiguraUtilizatorul, esteAdmin } from './sesiune.js'
 
 export default {
   name: 'App',
   data() {
-    return { flota, sesiune, notificare: { vizibila: false, masina: '', tip: '', detalii: '' } }
+    return { flota, sesiune, meniu: false, notificare: { vizibila: false, masina: '', tip: '', detalii: '' } }
+  },
+  computed: {
+    /** Conturi apare în meniu doar pentru admin; garda din router oprește și adresa scrisă de mână. */
+    admin() {
+      return esteAdmin()
+    },
   },
   watch: {
     /** Canalul live și vremea merg doar cu token: pornesc la login și se opresc la ieșire. */
