@@ -8,11 +8,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 import ro.flota.server.flota.Alarme;
 import ro.flota.server.live.CanalLive;
+import ro.flota.server.setari.Setari;
 
 class VerificareOfflineTest {
 
@@ -27,7 +29,9 @@ class VerificareOfflineTest {
         Alarme alarme = mock(Alarme.class);
         when(alarme.salveaza(eq("masina-1"), anyString(), anyString(), any(), any(), anyString()))
                 .thenThrow(new IllegalStateException("cheie străină"));
-        VerificareOffline verificare = new VerificareOffline(regula, alarme, mock(CanalLive.class),
+        Setari setari = mock(Setari.class);
+        when(setari.offlinePrelungit()).thenReturn(Duration.ofSeconds(60));
+        VerificareOffline verificare = new VerificareOffline(regula, alarme, mock(CanalLive.class), setari,
                 Clock.fixed(T0.plusSeconds(61), ZoneOffset.UTC));
 
         verificare.verifica();

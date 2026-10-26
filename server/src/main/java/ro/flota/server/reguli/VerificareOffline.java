@@ -9,8 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ro.flota.server.flota.Alarme;
 import ro.flota.server.live.CanalLive;
+import ro.flota.server.setari.Setari;
 
-/** La 5 secunde, caută mașinile offline de peste 60 de secunde (spec §6.4). */
+/** La 5 secunde, caută mașinile offline de peste pragul din setări, implicit 60 de secunde (spec §6.4, §16.3). */
 @Component
 public class VerificareOffline {
 
@@ -19,19 +20,21 @@ public class VerificareOffline {
     private final RegulaOffline regula;
     private final Alarme alarme;
     private final CanalLive live;
+    private final Setari setari;
     private final Clock ceas;
 
-    public VerificareOffline(RegulaOffline regula, Alarme alarme, CanalLive live, Clock ceas) {
+    public VerificareOffline(RegulaOffline regula, Alarme alarme, CanalLive live, Setari setari, Clock ceas) {
         this.regula = regula;
         this.alarme = alarme;
         this.live = live;
+        this.setari = setari;
         this.ceas = ceas;
     }
 
     @Scheduled(fixedRate = 5_000)
     public void verifica() {
         Instant acum = ceas.instant();
-        for (String id : regula.deAlarmat(acum)) {
+        for (String id : regula.deAlarmat(acum, setari.offlinePrelungit())) {
             Instant din = regula.offlineDin(id);
             if (din == null) {
                 continue; // a revenit ONLINE chiar acum, între cele două citiri
