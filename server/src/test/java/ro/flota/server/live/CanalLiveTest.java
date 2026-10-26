@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -65,5 +67,35 @@ class CanalLiveTest {
         canal.afterConnectionEstablished(s);
         canal.afterConnectionClosed(s, CloseStatus.NORMAL);
         assertEquals(0, canal.numarSesiuni());
+    }
+
+    /** Faza 6: o sesiune cu atributele puse la handshake de TokenLaHandshake. */
+    private static WebSocketSession sesiune(String id, String token, long utilizatorId) {
+        WebSocketSession s = sesiune(id);
+        when(s.getAttributes()).thenReturn(Map.of("token", token, "utilizatorId", utilizatorId));
+        return s;
+    }
+
+    @Test
+    void inchideToateSesiunileAceluiasiToken() throws Exception {
+        WebSocketSession a = sesiune("1", "t", 1L);
+        WebSocketSession b = sesiune("2", "t", 1L);
+        WebSocketSession c = sesiune("3", "u", 2L);
+        List.of(a, b, c).forEach(canal::afterConnectionEstablished);
+        canal.inchideSesiunileTokenului("t");
+        verify(a).close(new CloseStatus(4001, "sesiune încheiată"));
+        verify(b).close(new CloseStatus(4001, "sesiune încheiată"));
+        verify(c, never()).close(any());
+        assertEquals(1, canal.numarSesiuni());
+    }
+
+    @Test
+    void inchideSesiunileUtilizatorului() throws Exception {
+        WebSocketSession a = sesiune("1", "t", 7L);
+        WebSocketSession c = sesiune("3", "u", 2L);
+        List.of(a, c).forEach(canal::afterConnectionEstablished);
+        canal.inchideSesiunileUtilizatorului(7);
+        verify(a).close(new CloseStatus(4001, "sesiune încheiată"));
+        assertEquals(1, canal.numarSesiuni());
     }
 }
