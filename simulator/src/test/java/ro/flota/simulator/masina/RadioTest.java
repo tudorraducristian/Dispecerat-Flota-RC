@@ -105,6 +105,35 @@ class RadioTest {
         assertEquals(List.of(1L, 2L), seqTrimise());
     }
 
+    private static Mesaj alarma() {
+        return new Mesaj(TipMesaj.ALARMA, "flota/masina-1/alarma", "{}".getBytes(), 2, false);
+    }
+
+    /** Bug-ul din review-ul fazei 3: alarma QoS 2 ajungea de două ori după o reconectare. */
+    @Test
+    void mesajulTinutDeClientNuMaiPleacaSiDinBuffer() throws Exception {
+        radio.pas(); // conectat
+        coada.adauga(alarma());
+        conexiune.neconfirmaLaPublicare(1);
+        radio.pas();
+        assertEquals(0, coada.marime(), "clientul MQTT îl retrimite singur; o copie din buffer ar fi o alarmă dublă");
+        assertEquals(List.of(1_000L), somnuri);
+    }
+
+    /** Broker-ul repornit fără persistență a uitat sesiunea, deci clientul renunță: alarma nu are voie să se piardă. */
+    @Test
+    void mesajulLaCareClientulRenuntaRevinePrimulInBuffer() throws Exception {
+        radio.pas(); // conectat
+        Mesaj alarma = alarma();
+        coada.adauga(alarma);
+        coada.adauga(telemetrie(1));
+        conexiune.neconfirmaLaPublicare(1);
+        radio.pas();
+        conexiune.renuntaLaMesajelePastrate();
+        assertEquals(2, coada.marime());
+        assertSame(alarma, coada.continut().getFirst());
+    }
+
     @Test
     void onlineEsuatInseamnaReconectare() throws Exception {
         conexiune.esueazaLaPublicare(1);

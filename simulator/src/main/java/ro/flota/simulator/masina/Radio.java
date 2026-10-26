@@ -25,6 +25,13 @@ public final class Radio implements Runnable {
         this.coada = coada;
         this.pauza = pauza;
         this.somn = somn;
+        conexiune.laEsecTarziu(this::inapoiDeLaClient);
+    }
+
+    /** Clientul MQTT a renunțat la un mesaj pe care îl ținea (broker-ul a pierdut sesiunea): revine primul la rând. */
+    private void inapoiDeLaClient(Mesaj mesaj) {
+        coada.puneInapoi(mesaj);
+        System.out.printf("[%s] clientul MQTT a renunțat la mesajul de pe %s; îl pun înapoi în buffer%n", id, mesaj.topic());
     }
 
     @Override
@@ -56,8 +63,13 @@ public final class Radio implements Runnable {
         try {
             conexiune.publica(mesaj);
         } catch (EroareConexiune e) {
-            coada.puneInapoi(mesaj);
-            System.out.printf("[%s] n-am putut trimite (%s); păstrez mesajul%n", id, e.getMessage());
+            if (e.ramaneLaClient()) {
+                // Clientul MQTT îl retrimite singur după reconectare; încă o copie din buffer ar ajunge de două ori.
+                System.out.printf("[%s] %s pe %s; îl retrimite clientul MQTT%n", id, e.getMessage(), mesaj.topic());
+            } else {
+                coada.puneInapoi(mesaj);
+                System.out.printf("[%s] n-am putut trimite (%s); păstrez mesajul%n", id, e.getMessage());
+            }
             somn.dormi(PAUZA_DUPA_EROARE_MS);
         }
     }

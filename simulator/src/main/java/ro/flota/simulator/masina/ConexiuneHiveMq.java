@@ -4,7 +4,9 @@ import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
+import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -24,6 +26,7 @@ public final class ConexiuneHiveMq implements Conexiune {
     private final Mqtt3BlockingClient client;
     private volatile boolean conectata = false;
     private volatile Consumer<byte[]> laComanda = payload -> { };
+    private volatile Consumer<Mesaj> laEsecTarziu = mesaj -> { };
 
     public ConexiuneHiveMq(String id, Setari setari) {
         this.id = id;
@@ -73,18 +76,35 @@ public final class ConexiuneHiveMq implements Conexiune {
 
     @Override
     public void publica(Mesaj mesaj) throws EroareConexiune {
+        CompletableFuture<Mqtt3Publish> trimitere;
         try {
-            client.toAsync().publishWith()
+            trimitere = client.toAsync().publishWith()
                     .topic(mesaj.topic())
                     .qos(qos(mesaj.qos()))
                     .retain(mesaj.retain())
                     .payload(mesaj.payload())
-                    .send()
-                    .get(SECUNDE_PUBLICARE, TimeUnit.SECONDS);
+                    .send();
+        } catch (RuntimeException e) {
+            throw new EroareConexiune(e.getMessage(), e);
+        }
+        try {
+            trimitere.get(SECUNDE_PUBLICARE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new EroareConexiune("publicare întreruptă", e);
-        } catch (ExecutionException | TimeoutException | RuntimeException e) {
+        } catch (TimeoutException e) {
+            if (mesaj.qos() == 0) {
+                throw new EroareConexiune("publicarea n-a plecat la timp", e);
+            }
+            // QoS 1 și 2: clientul ține mesajul în sesiune și îl retrimite singur după reconectare (MQTT 3.1.1
+            // §4.4). Dacă renunță totuși la el, fiindcă broker-ul a pierdut sesiunea, îl dăm înapoi radioului.
+            trimitere.whenComplete((trimis, eroare) -> {
+                if (eroare != null) {
+                    laEsecTarziu.accept(mesaj);
+                }
+            });
+            throw EroareConexiune.neconfirmata(e);
+        } catch (ExecutionException | RuntimeException e) {
             throw new EroareConexiune(e.getMessage(), e);
         }
     }
@@ -116,5 +136,10 @@ public final class ConexiuneHiveMq implements Conexiune {
     @Override
     public void laComanda(Consumer<byte[]> ascultator) {
         this.laComanda = ascultator;
+    }
+
+    @Override
+    public void laEsecTarziu(Consumer<Mesaj> ascultator) {
+        this.laEsecTarziu = ascultator;
     }
 }

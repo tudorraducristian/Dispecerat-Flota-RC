@@ -16,4 +16,10 @@ public interface Conexiune {
 
     /** Cine primește comenzile venite pe flota/<id>/comenzi. Se setează o dată, înainte de prima conectare. */
     void laComanda(Consumer<byte[]> ascultator);
+
+    /**
+     * Cine primește înapoi un mesaj rămas la client (EroareConexiune.ramaneLaClient) la care clientul a renunțat
+     * mai târziu, de exemplu pentru că broker-ul repornit a pierdut sesiunea. Se setează o dată, la început.
+     */
+    void laEsecTarziu(Consumer<Mesaj> ascultator);
 }

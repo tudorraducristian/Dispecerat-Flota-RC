@@ -11,12 +11,14 @@ import ro.flota.simulator.mesaje.TipMesaj;
 final class ConexiuneFalsa implements Conexiune {
 
     final List<Mesaj> publicate = new CopyOnWriteArrayList<>();
+    final List<Mesaj> pastrateDeClient = new CopyOnWriteArrayList<>();
     final List<String> evenimente = new CopyOnWriteArrayList<>();
     int conectari;
 
     private boolean conectata;
     private int esecuriLaConectare;
     private int esecuriLaPublicare;
+    private int neconfirmariLaPublicare;
 
     synchronized void esueazaLaConectare(int ori) {
         esecuriLaConectare = ori;
@@ -24,6 +26,19 @@ final class ConexiuneFalsa implements Conexiune {
 
     synchronized void esueazaLaPublicare(int ori) {
         esecuriLaPublicare = ori;
+    }
+
+    /** Ca HiveMQ când pică legătura cu mesajul pe drum: confirmarea nu vine, dar clientul îl ține în sesiune. */
+    synchronized void neconfirmaLaPublicare(int ori) {
+        neconfirmariLaPublicare = ori;
+    }
+
+    /** Ca HiveMQ când broker-ul a pierdut sesiunea: renunță la mesajele ținute și le dă înapoi. */
+    void renuntaLaMesajelePastrate() {
+        for (Mesaj mesaj : pastrateDeClient) {
+            laEsecTarziu.accept(mesaj);
+        }
+        pastrateDeClient.clear();
     }
 
     synchronized void pierdeConexiunea() {
@@ -56,6 +71,11 @@ final class ConexiuneFalsa implements Conexiune {
             esecuriLaPublicare--;
             throw new EroareConexiune("publicare eșuată", null);
         }
+        if (neconfirmariLaPublicare > 0) {
+            neconfirmariLaPublicare--;
+            pastrateDeClient.add(mesaj);
+            throw EroareConexiune.neconfirmata(null);
+        }
         publicate.add(mesaj);
         evenimente.add("publică " + mesaj.topic() + (mesaj.tip() == TipMesaj.STARE ? " " + mesaj.text() : ""));
     }
@@ -76,6 +96,13 @@ final class ConexiuneFalsa implements Conexiune {
     @Override
     public void laComanda(Consumer<byte[]> ascultator) {
         laComanda = ascultator;
+    }
+
+    private volatile Consumer<Mesaj> laEsecTarziu = mesaj -> { };
+
+    @Override
+    public void laEsecTarziu(Consumer<Mesaj> ascultator) {
+        laEsecTarziu = ascultator;
     }
 
     /** În teste: ca și cum broker-ul ar livra o comandă. */
