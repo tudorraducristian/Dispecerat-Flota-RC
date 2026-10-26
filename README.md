@@ -81,6 +81,43 @@ Fiecare pas e într-un terminal separat, din folderul ăsta.
 Se opresc cu Ctrl+C. La „Terminate batch job (Y/N)?” răspunzi Y. Scenariul
 complet de test e în `docs\scenariu-test.md`.
 
+## Primul login
+
+La prima pornire, dacă nu există niciun administrator, S face contul `admin` și
+scrie parola o singură dată în log, ca `WARN`:
+
+```
+Am creat contul admin. Parola, afișată o singură dată: …. Schimb-o din Setări.
+```
+
+Pe http://127.0.0.1:5173 intri cu `admin` și parola din log, apoi o schimbi din
+Setări, la „Contul meu”. Parola nu stă nicăieri în git.
+
+**Dacă parola lui `admin` s-a pierdut,** în baza `flota`:
+
+```sql
+DELETE FROM utilizatori WHERE nume = 'admin';
+```
+
+La repornirea lui S, serverul face din nou contul, cu o parolă nouă în log.
+
+## Conturile
+
+- **Rolurile:** `DISPECER` lucrează cu harta, Rețea, Alarme și comenzile, își
+  schimbă parola și vede setările. `ADMIN` poate în plus conturile și salvarea
+  setărilor.
+- **Conturile noi** le face adminul, din Conturi. Numele are 3–20 caractere:
+  litere mici, cifre, punct, `_` sau `-`. Parola are cel puțin 8 caractere.
+  Rolul nu se mai schimbă după creare.
+- **Sesiunea** ține 8 ore de la login. După, sau după o resetare de parolă
+  făcută de admin, UI-ul te duce înapoi la login.
+- **Cererile `/api`** cer token-ul primit la login, în `Authorization`:
+
+  ```powershell
+  $r = Invoke-RestMethod -Method Post -ContentType 'application/json' -Body '{"nume":"admin","parola":"…"}' http://127.0.0.1:8080/api/auth/login
+  curl.exe -s -H "Authorization: Bearer $($r.token)" http://127.0.0.1:8080/api/masini
+  ```
+
 ## Dacă Mosquitto nu pornește: HiveMQ CE
 
 Aplicația vorbește MQTT 3.1.1 și nu ține de un broker anume. Orice broker pe
@@ -139,6 +176,12 @@ Cifrele cu HiveMQ CE sînt de pe laptopul colegului.
   jurnalul, statisticile pe mașină și graficul de latență.
 - **Alarme:** lista, filtrată după „văzută”. Alarmele noi apar ca notificare pe
   orice pagină.
+- **Setări:** propria parolă și cele două setări ale flotei: după câte secunde
+  offline vine alarma și câte minute arată traseul din panoul mașinii.
+- **Conturi,** doar pentru admin: lista, contul nou, resetarea parolei și
+  ștergerea.
+
+Paginile se deschid din meniul lateral, de la butonul din stânga barei.
 
 ## Documente
 

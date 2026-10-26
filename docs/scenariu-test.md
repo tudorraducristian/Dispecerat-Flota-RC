@@ -112,6 +112,32 @@ Se așteaptă:
 
 La final, `NORMAL TOATE`.
 
+### 7. Login-ul
+
+**Din faza 6.** Un cont de dispecer, de exemplu `dispecer1`, făcut din Conturi.
+
+1. **Două taburi și ieșirea.** Login ca `dispecer1`, apoi un al doilea tab:
+   taburile împart token-ul din `localStorage`. „Ieșire” în primul. Se
+   așteaptă: în cel mult 3 secunde, al doilea tab e pe `/login`.
+2. **Token-ul expirat cu pagina deschisă.** Cu un tab logat, în D:
+
+   ```powershell
+   Sql "UPDATE tokenuri SET expira_la = UTC_TIMESTAMP(3) - INTERVAL 1 SECOND"
+   ```
+
+   Se așteaptă: în cel mult 70 de secunde, tab-ul e pe `/login`, iar tabelul
+   `tokenuri` e gol.
+3. **Resetarea parolei scoate omul din aplicație.** `dispecer1` e logat în
+   browser. Adminul îi resetează parola pe endpoint-ul 20, cu `curl.exe` și
+   token-ul lui de admin, fiindcă același browser ține un singur login. Se
+   așteaptă: tab-ul lui `dispecer1` ajunge pe `/login`, iar parola veche nu mai
+   merge.
+
+Pe 2026-10-26, partea de server a pașilor 1–3, verificată cu taburi simulate
+din Node: canalele se închid cu 4001 în 16 ms la ieșire, în 57 de secunde la
+token-ul expirat și în 80 ms la resetare; token-ul vechi dă 401, iar parola
+veche, tot 401.
+
 ## Măsurători
 
 Se completează în faza 4 (riscul R6) și se folosesc în scenariul prezentării.
