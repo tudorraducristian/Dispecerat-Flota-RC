@@ -51,18 +51,21 @@ După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.m
 **Faci:** `GAURA masina-5 10`.
 
 **Se vede:**
-- `masina-5` rămâne verde câteva secunde, deși nu mai trece nimic: 5,2 măsurat
-  cu HiveMQ, vreo 7,5 cu Mosquitto;
+- `masina-5` rămâne verde câteva secunde, deși nu mai trece nimic: 6,6 măsurat
+  cu Mosquitto (5,2 cu HiveMQ CE);
 - apoi devine gri, iar la revenire pe hartă e o porțiune lipsă, urmată de una
   punctată;
-- pe Rețea, „Pierdute” crește cu vreo 5.
+- pe Rețea, „Pierdute” crește cu vreo 7.
 
 **Spui:**
 - conexiunea e deschisă, dar mută. Keepalive-ul de 5 secunde o descoperă:
-  broker-ul închide după 1,5 × 5 = 7,5 secunde fără niciun pachet;
+  broker-ul închide după 1,5 × 5 = 7,5 secunde fără niciun pachet. Le numără de
+  la ultimul pachet primit, care a plecat cu până la o secundă înainte de gaură,
+  iar Mosquitto numără pe secunde întregi, deci în practică ies 6–7 secunde;
 - telemetria e pe QoS 0, deci ce era pe drum s-a pierdut. Alarmele sînt pe
-  QoS 2 și ajung după reconectare;
-- o gaură mai scurtă de 7,5 secunde nu pierde nimic, doar întârzie.
+  QoS 2 și ajung după reconectare, o singură dată;
+- o gaură de 6 secunde nu pierde nimic, doar întârzie; de la 7 secunde, broker-ul
+  închide conexiunea și se pierde ce era pe drum.
 
 ### 4. O comandă dată în tunel, 60 de secunde
 
@@ -112,6 +115,7 @@ La final, „Normal”.
 | „proxy indisponibil” pe Rețea | P nu rulează: îl pornești; mașinile revin în cel mult 30 de secunde |
 | O mașină rămâne gri după tunel peste 40 de secunde | În C, ultimele rânduri ale mașinii; dacă C a căzut, îl pornești |
 | Chip-ul „fără legătură cu serverul” | S nu rulează: îl pornești; UI-ul se reconectează singur |
+| În S, „Deconectat de la Mosquitto”, iar toate mașinile sînt gri | A nu rulează: îl pornești; dacă Mosquitto nu pornește, HiveMQ CE, după `README.md`. Serverul revine în cel mult 10 secunde, mașinile în cel mult 30 |
 
 ## Întrebări probabile
 

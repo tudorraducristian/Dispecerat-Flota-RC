@@ -99,7 +99,8 @@ Aștepți 30 de secunde.
 Se așteaptă:
 - comanda rămâne `TRIMISA`, iar UI-ul spune „așteaptă mașina”;
 - după ieșirea din tunel, devine `CONFIRMATA`;
-- viteza lui `masina-3` nu mai trece de 50.
+- viteza lui `masina-3` coboară cu cel mult 5 km/h pe secundă până la 50, deci
+  2–3 secunde mai trece de 50, apoi nu mai trece.
 
 ### 6. `INTARZIERE TOATE 500 200`
 
@@ -115,20 +116,23 @@ La final, `NORMAL TOATE`.
 
 Se completează în faza 4 (riscul R6) și se folosesc în scenariul prezentării.
 
-| Ce | Valoarea măsurată | Data |
+| Ce | Mosquitto 2.1.2, 2026-10-26 | HiveMQ CE 2026.5, 2026-10-22 |
 |---|---|---|
-| `GAURA masina-5 10`: secunde până devine gri | 5,2 (6,5 · 5,2 · 5,0) | 2026-10-22 |
-| `GAURA masina-5 10`: mesaje pierdute | 5 (7 · 5 · 5) | 2026-10-22 |
-| `GAURA masina-5 10`: mesaje recuperate | 5 (3 · 5 · 6) | 2026-10-22 |
-| `TUNEL masina-3 15`: secunde până revine verde | 18,6 (18,1 · 19,1 · 18,6) | 2026-10-22 |
-| `GAURA masina-5 N`: cea mai lungă gaură fără pierderi | 6 secunde; la 7, o pierdere din 3 încercări | 2026-10-22 |
+| `GAURA masina-5 10`: secunde până devine gri | 6,6 (5,8 · 6,8 · 6,6) | 5,2 (6,5 · 5,2 · 5,0) |
+| `GAURA masina-5 10`: mesaje pierdute | 7 (6 · 7 · 7) | 5 (7 · 5 · 5) |
+| `GAURA masina-5 10`: mesaje recuperate | 3 (4 · 3 · 3) | 5 (3 · 5 · 6) |
+| `TUNEL masina-3 15`: secunde până revine verde | 19,2 (19,9 · 19,2 · 18,9) | 18,6 (18,1 · 19,1 · 18,6) |
+| `GAURA masina-5 N`: cea mai lungă gaură fără pierderi | 6 secunde (0 · 0 · 0); la 7, câte 7 pierdute de fiecare dată | 6 secunde; la 7, o pierdere din 3 încercări |
 
-În paranteză sînt cele trei încercări; în tabel e valoarea din mijloc.
+În paranteză sînt cele trei încercări; în tabel e valoarea din mijloc. Cifrele
+pentru prezentare sînt cele cu Mosquitto, broker-ul din `README.md`.
 
-Măsurătorile din 2026-10-22 s-au făcut cu HiveMQ CE 2026.5 în locul lui
-Mosquitto, pe 127.0.0.1:1883, fiindcă mosquitto.org nu răspundea în ziua aceea.
-Secundele până la gri depind de cum numără broker-ul keepalive-ul, deci cu
-Mosquitto pot ieși puțin altfel.
+Mosquitto le-a măsurat Claude pe laptopul lui Tudor, cu un script care citește
+starea din REST la 100 ms, după pașii 3–5 din planul fazei 4. HiveMQ CE l-a
+folosit colegul pe 2026-10-22, pe laptopul lui, fiindcă mosquitto.org nu
+răspundea atunci. De ce gri vine înainte de 7,5 secunde: broker-ul numără
+1,5 × keepalive de la ultimul pachet primit, care a plecat cu până la o secundă
+înainte de gaură, iar Mosquitto numără pe secunde întregi.
 
 Tot atunci, verificările din faza 4:
 - un tunel de 60 de secunde cu `buffer.marime=20`: în buffer 20 de mesaje,
@@ -140,3 +144,18 @@ Tot atunci, verificările din faza 4:
   după 30 de secunde;
 - `INTARZIERE TOATE 500 200`: latența între 460 și 540 ms, fără mesaje
   recuperate sau pierdute.
+
+Pe 2026-10-26, cu Mosquitto, verificările fazei 5, prin REST:
+- `TUNEL masina-3 30` cerut prin `POST /api/retea/vreme`, apoi
+  `LIMITEAZA_VITEZA` 50: comanda a rămas `TRIMISA` cât a ținut tunelul și a
+  devenit `CONFIRMATA` la 6 secunde după ieșire; viteza a coborât 63,7 → 58,7 →
+  53,7 → 50 și a rămas 50 în cele 120 de poziții de după;
+- `/api/statistici`: 10 mașini; `/api/retea/stare`: 10 rânduri;
+  `/api/retea/evenimente`: fiecare ordin, cu răspunsul `OK`;
+- `INTARZIERE TOATE 500 200`: latența medie pe mașini între 436 și 572 ms,
+  media 516; după `NORMAL`, 63 ms; contoarele au rămas 0;
+- serverul revine la broker în 4 secunde după o pană de 35 de secunde;
+- un `mosquitto_sub -p 1884 -i auto-1A2B` primește „identifier rejected” și nu
+  apare în `STARE`.
+
+UI-ul nu l-a văzut nimeni în browser pe 2026-10-26: doar build-ul a trecut.

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+    HiveMQ CE pentru flota-rc: rezerva lui Mosquitto (README, „Dacă Mosquitto nu pornește”).
+    Se copiază peste conf\config.xml din folderul HiveMQ CE. Face ce face și mosquitto\mosquitto.conf:
+    ascultă doar pe laptop, fără parolă, iar sesiunile persistente stau în memorie cât rulează broker-ul.
+    Statisticile anonime de folosire, pornite implicit, sînt oprite.
+-->
+<hivemq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="config.xsd">
+
+    <listeners>
+        <tcp-listener>
+            <port>1883</port>
+            <bind-address>127.0.0.1</bind-address>
+        </tcp-listener>
+    </listeners>
+
+    <persistence>
+        <mode>in-memory</mode>
+    </persistence>
+
+    <anonymous-usage-statistics>
+        <enabled>false</enabled>
+    </anonymous-usage-statistics>
+
+</hivemq>
