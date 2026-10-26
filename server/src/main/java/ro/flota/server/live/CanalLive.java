@@ -66,6 +66,14 @@ public class CanalLive extends TextWebSocketHandler {
         return sesiuni.size();
     }
 
+    /** La log off: închide canalele deschise cu token-ul ăsta. Corpul vine în Task 4 al fazei 6. */
+    public void inchideSesiunileTokenului(String token) {
+    }
+
+    /** La ștergerea unui cont sau la resetarea parolei lui. Corpul vine în Task 4 al fazei 6. */
+    public void inchideSesiunileUtilizatorului(long id) {
+    }
+
     private static void inchideLinistit(WebSocketSession s) {
         try {
             s.close(CloseStatus.SERVER_ERROR);

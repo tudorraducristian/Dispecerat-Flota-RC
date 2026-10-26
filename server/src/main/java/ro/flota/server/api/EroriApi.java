@@ -22,6 +22,17 @@ public class EroriApi {
         return raspuns(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    /** 401: nu știm cine ești. 403: știm, dar rolul tău nu ajunge. */
+    @ExceptionHandler(Neautorizat.class)
+    ResponseEntity<Eroare> neautorizat(Neautorizat e) {
+        return raspuns(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(Interzis.class)
+    ResponseEntity<Eroare> interzis(Interzis e) {
+        return raspuns(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
     @ExceptionHandler(ServiciuIndisponibil.class)
     ResponseEntity<Eroare> indisponibil(ServiciuIndisponibil e) {
         return raspuns(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());

@@ -1,7 +1,6 @@
 package ro.flota.server.api;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +16,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ro.flota.server.conturi.Rol;
+import ro.flota.server.conturi.ServiciuAutentificare;
+import ro.flota.server.conturi.UtilizatorCurent;
 import ro.flota.server.date.MasinaDefinita;
 import ro.flota.server.date.Punct;
 import ro.flota.server.date.RegistruFlota;
@@ -28,6 +32,7 @@ import ro.flota.server.flota.Pozitii;
 /**
  * Registrul fazei 2: lipsea un test care să treacă prin Spring MVC, cu JSON-ul și codurile adevărate.
  * Masini și Pozitii sînt înlocuite, deci testul nu are nevoie de MySQL; registrul flotei e cel real.
+ * Din faza 6, cererile trec și prin interceptorul de autentificare, cu un token „t” de dispecer.
  */
 @WebMvcTest(MasiniController.class)
 @Import(RegistruFlota.class)
@@ -48,9 +53,18 @@ class MasiniControllerTest {
     @MockitoBean
     private Pozitii pozitii;
 
+    @MockitoBean
+    private ServiciuAutentificare autentificare;
+
     @BeforeEach
-    void flota() {
+    void flotaSiDispecer() {
         registru.incarca(List.of(Z1), List.of(new MasinaDefinita("masina-1", "z1"), new MasinaDefinita("masina-3", "z1")));
+        when(autentificare.valideaza("t")).thenReturn(Optional.of(new UtilizatorCurent(2, "ana", Rol.DISPECER, "t")));
+    }
+
+    /** O cerere GET de dispecer logat. */
+    static MockHttpServletRequestBuilder get(String url) {
+        return MockMvcRequestBuilders.get(url).header("Authorization", "Bearer t");
     }
 
     private static MasinaDto masina(String id) {
@@ -67,6 +81,16 @@ class MasiniControllerTest {
                 .andExpect(jsonPath("$[0].stare").value("ONLINE"))
                 .andExpect(jsonPath("$[0].ultimaVedere").value("2026-12-10T10:15:03.120Z"))
                 .andExpect(jsonPath("$[0].pierdute").value(1));
+    }
+
+    /** Faza 6: fără token, interceptorul oprește cererea înainte de controller, cu același JSON de eroare. */
+    @Test
+    void faraTokenDa401CaJson() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/api/masini"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.mesaj").value("trebuie să te autentifici"));
     }
 
     @Test
