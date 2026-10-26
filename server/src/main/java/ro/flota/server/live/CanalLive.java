@@ -33,7 +33,10 @@ public class CanalLive extends TextWebSocketHandler {
 
     /**
      * O sesiune WebSocket nu suportă două trimiteri în același timp, iar aici trimit mai multe fire.
-     * Decoratorul pune mesajele la rând și închide un browser care rămâne prea mult în urmă.
+     * Decoratorul le pune la rând: un singur fir trimite, iar celelalte își lasă mesajul în coadă și pleacă.
+     * Limitele (2 s, 512 KB) le verifică doar un fir care găsește o trimitere în curs; dacă sînt depășite,
+     * închide sesiunea. Firul care trimite efectiv rămâne însă blocat cât durează trimiterea spre un browser
+     * lent, iar dacă nu mai vine niciun mesaj, nimeni nu verifică limitele. Cu zece mașini, mesajele vin des.
      */
     @Override
     public void afterConnectionEstablished(WebSocketSession sesiune) {

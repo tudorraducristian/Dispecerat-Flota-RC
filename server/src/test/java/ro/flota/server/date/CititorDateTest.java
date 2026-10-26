@@ -43,6 +43,15 @@ class CititorDateTest {
         return p;
     }
 
+    /** Registrul fazei 2: pornit din alt folder, serverul spunea doar „NoSuchFileException”, fără unde a căutat. */
+    @Test
+    void fisierulLipsaSpuneUndeACautat() {
+        Path lipsa = dosar.resolve("zone.json");
+        String mesaj = assertThrows(EroareDate.class, () -> cititor.zone(lipsa)).getMessage();
+        assertTrue(mesaj.startsWith("zone.json: "), mesaj);
+        assertTrue(mesaj.contains(lipsa.toAbsolutePath().normalize().toString()), mesaj);
+    }
+
     private String eroareZone(String continut) throws IOException {
         Path p = scrie("zone.json", continut);
         return assertThrows(EroareDate.class, () -> cititor.zone(p)).getMessage();

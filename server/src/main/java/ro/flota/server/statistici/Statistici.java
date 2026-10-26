@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
+import ro.flota.server.date.RegistruFlota;
 import ro.flota.server.flota.ContoareDto;
 import ro.flota.server.flota.Masini;
 
@@ -17,11 +18,13 @@ import ro.flota.server.flota.Masini;
 public class Statistici {
 
     private final Masini masini;
+    private final RegistruFlota registru;
     private final Clock ceas;
     private final Map<String, FereastraStatistici> ferestre = new HashMap<>();
 
-    public Statistici(Masini masini, Clock ceas) {
+    public Statistici(Masini masini, RegistruFlota registru, Clock ceas) {
         this.masini = masini;
+        this.registru = registru;
         this.ceas = ceas;
     }
 
@@ -31,7 +34,10 @@ public class Statistici {
 
     public List<StatisticaDto> acum() {
         Instant acum = ceas.instant();
-        return masini.contoare().stream().map(c -> statistica(c, acum)).toList();
+        return masini.contoare().stream()
+                .filter(c -> registru.cunoscuta(c.id())) // doar flota de acum, nu și mașinile scoase din flota.json
+                .map(c -> statistica(c, acum))
+                .toList();
     }
 
     private synchronized StatisticaDto statistica(ContoareDto c, Instant acum) {

@@ -2,6 +2,7 @@ package ro.flota.server.date;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -86,8 +87,12 @@ public final class CititorDate {
         String continut;
         try {
             continut = Files.readString(fisier);
+        } catch (NoSuchFileException e) {
+            // Calea e relativă la folderul din care pornește serverul, deci spun unde am căutat de fapt.
+            throw new EroareDate(fisier, "nu există; l-am căutat la " + fisier.toAbsolutePath().normalize());
         } catch (IOException e) {
-            throw new EroareDate(fisier, "nu pot citi fișierul (" + e.getClass().getSimpleName() + ")");
+            throw new EroareDate(fisier, "nu pot citi fișierul " + fisier.toAbsolutePath().normalize()
+                    + " (" + e.getClass().getSimpleName() + ")");
         }
         if (continut.startsWith("\uFEFF")) {
             continut = continut.substring(1); // BOM-ul pus de PowerShell 5.1

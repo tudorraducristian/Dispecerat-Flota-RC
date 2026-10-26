@@ -34,6 +34,10 @@ public class RegistruFlota {
         return masini.keySet();
     }
 
+    public Set<String> zone() {
+        return zone.keySet();
+    }
+
     public Optional<ZonaDefinita> zonaMasinii(String id) {
         MasinaDefinita m = masini.get(id);
         return m == null ? Optional.empty() : Optional.ofNullable(zone.get(m.zona()));
