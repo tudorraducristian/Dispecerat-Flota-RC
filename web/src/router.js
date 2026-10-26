@@ -3,6 +3,8 @@ import PaginaHarta from './pagini/PaginaHarta.vue'
 import PaginaRetea from './pagini/PaginaRetea.vue'
 import PaginaAlarme from './pagini/PaginaAlarme.vue'
 import PaginaLogin from './pagini/PaginaLogin.vue'
+import PaginaSetari from './pagini/PaginaSetari.vue'
+import PaginaConturi from './pagini/PaginaConturi.vue'
 import { sesiune, asiguraUtilizatorul, esteAdmin } from './sesiune.js'
 
 /** Paginile din spec §7 și §16.4. Doar /login e publică. */
@@ -13,6 +15,8 @@ export const router = createRouter({
     { path: '/', component: PaginaHarta },
     { path: '/retea', component: PaginaRetea },
     { path: '/alarme', component: PaginaAlarme },
+    { path: '/setari', component: PaginaSetari },
+    { path: '/conturi', component: PaginaConturi, meta: { doarAdmin: true } },
   ],
 })
 

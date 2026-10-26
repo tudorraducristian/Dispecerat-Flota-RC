@@ -53,4 +53,11 @@ export const api = {
   marcheazaVazuta: (id) => cere(`/api/alarme/${id}`, { method: 'PATCH' }),
   trimiteComanda: (id, cerere) => cere(`/api/masini/${id}/comenzi`, { method: 'POST', body: JSON.stringify(cerere) }),
   comenzi: (id) => cere(`/api/masini/${id}/comenzi`),
+  utilizatori: () => cere('/api/utilizatori'),
+  creeazaCont: (cerere) => cere('/api/utilizatori', { method: 'POST', body: JSON.stringify(cerere) }),
+  stergeCont: (id) => cere(`/api/utilizatori/${id}`, { method: 'DELETE' }),
+  reseteazaParola: (id, noua) =>
+    cere(`/api/utilizatori/${id}/parola`, { method: 'PUT', body: JSON.stringify({ parolaNoua: noua }) }),
+  setari: () => cere('/api/setari'),
+  salveazaSetari: (s) => cere('/api/setari', { method: 'PUT', body: JSON.stringify(s) }),
 }
