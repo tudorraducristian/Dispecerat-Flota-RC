@@ -1,0 +1,11 @@
+experiment,repetitie,pierdute,recuperate,secunde_offline,latenta_medie_ms,latenta_p95_ms
+e1-tunel,1,0,19,18,,
+e1-tunel,2,0,20,18,,
+e1-tunel,3,0,18,17,,
+e2-gaura10,1,6,4,3,,
+e2-gaura10,2,7,3,3,107,107
+e2-gaura10,3,6,4,3,,
+e3-gaura4,1,0,0,0,1668,3149
+e3-gaura4,2,0,0,0,2135,3600
+e3-gaura4,3,0,0,0,2147,4124
+e4-intarziere,1,0,0,0,532,700
