@@ -19,10 +19,31 @@ export function asculta(f) {
   return () => ascultatori.delete(f)
 }
 
+/** Mașinile care au primit un STARE live de la ultima deschidere a canalului. */
+const stariLive = new Set()
+
 export async function incarcaMasini() {
   for (const m of await api.masini()) {
-    flota.masini[m.id] = { ...m, pozitie: m.ultimaPozitie }
+    flota.masini[m.id] = imbinaMasina(flota.masini[m.id], m, stariLive.has(m.id))
   }
+}
+
+/**
+ * Instantaneul din REST pleacă după ce canalul live s-a deschis, deci până sosește pot veni mesaje live mai
+ * noi decât el. Se păstrează poziția și ultimaVedere mai noi, iar starea live doar dacă a venit după
+ * deschidere: una rămasă dinainte, de exemplu de dinaintea unei reporniri a serverului, nu mai e adevărată.
+ */
+export function imbinaMasina(existenta, dinRest, stareLive) {
+  const noua = { ...dinRest, pozitie: dinRest.ultimaPozitie }
+  if (!existenta) return noua
+  if (existenta.pozitie && maiNoua(existenta.pozitie.oraMasinii, noua.pozitie?.oraMasinii)) {
+    noua.pozitie = existenta.pozitie
+  }
+  if (existenta.ultimaVedere && maiNoua(existenta.ultimaVedere, noua.ultimaVedere)) {
+    noua.ultimaVedere = existenta.ultimaVedere
+  }
+  if (stareLive) noua.stare = existenta.stare
+  return noua
 }
 
 /** Vremea fiecărei mașini, din STARE-ul proxy-ului. Dacă proxy-ul nu răspunde, o spune (spec §6.5). */
@@ -48,6 +69,7 @@ export function pornesteLive() {
   const ws = new WebSocket(`ws://${location.host}/ws`)
   ws.onopen = () => {
     flota.conectat = true
+    stariLive.clear()
     // Ce s-a întâmplat cât canalul a fost închis se ia din REST.
     incarcaMasini().catch((e) => console.warn('nu pot încărca mașinile:', e.message))
   }
@@ -95,6 +117,7 @@ function aplicaPozitie(date) {
 function aplicaStare(date) {
   const m = flota.masini[date.masinaId]
   if (!m) return
+  stariLive.add(date.masinaId)
   m.stare = date.stare
   m.ultimaVedere = date.ultimaVedere
 }

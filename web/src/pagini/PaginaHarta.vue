@@ -30,17 +30,36 @@ export default {
     masinaSelectata() {
       return this.selectata ? flota.masini[this.selectata] : null
     },
+    conectat() {
+      return flota.conectat
+    },
   },
-  async mounted() {
+  watch: {
+    /** Când revine legătura cu serverul, se ia din nou ce n-a mers cât a lipsit (registrul fazei 2). */
+    conectat(acum) {
+      if (!acum) return
+      if (!this.zone.length) this.incarcaZone()
+      if (this.selectata && !this.istoric && this.eroareTraseu) this.alege(this.selectata)
+    },
+  },
+  mounted() {
     this.opresteAscultarea = asculta((tip, date) => {
       if (tip === 'POZITIE' && !this.istoric && date.masinaId === this.selectata) this.traseu.push(date)
     })
-    this.zone = await api.zone()
+    this.incarcaZone()
   },
   beforeUnmount() {
     this.opresteAscultarea()
   },
   methods: {
+    /** Cu serverul oprit nu se poate; atunci reîncearcă watch-ul de mai sus, la revenirea legăturii. */
+    async incarcaZone() {
+      try {
+        this.zone = await api.zone()
+      } catch (e) {
+        console.warn('nu pot încărca zonele:', e.message)
+      }
+    },
     /** Ultimele 5 minute din REST, apoi traseul crește din canalul live. */
     async alege(id) {
       this.selectata = id
@@ -48,8 +67,12 @@ export default {
       this.eroareTraseu = null
       this.traseu = []
       if (!id) return
-      const traseu = await api.traseu(id)
-      if (this.selectata === id && !this.istoric) this.traseu = traseu
+      try {
+        const traseu = await api.traseu(id)
+        if (this.selectata === id && !this.istoric) this.traseu = traseu
+      } catch (e) {
+        if (this.selectata === id) this.eroareTraseu = `nu pot încărca traseul: ${e.message}`
+      }
     },
     /** Modul istoric: doar intervalul cerut, fără poziții live adăugate. */
     async arataInterval({ de, pana }) {
