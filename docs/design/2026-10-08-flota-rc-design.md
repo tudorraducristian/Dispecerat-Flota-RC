@@ -1,7 +1,7 @@
 # Flotă de mașini conectate: proiectul de Rețele de Calculatoare — design
 
 *Scris: 2026-10-08 · Owner: Tudor · Stare: aprobat în discuție, așteaptă review-ul
-specului*
+specului · Completat pe 2026-10-19 cu faza 6, după grila profesorului (§16)*
 
 ---
 
@@ -64,7 +64,7 @@ iar dispeceratul arată live, pe hartă, cum supraviețuiește sistemul.
 | D11 | **Serverul se conectează direct la Mosquitto,** cu sesiune persistentă și cu reconectarea automată a bibliotecii | serverul prin proxy, caz în care dispecerul ar intra și el în tunel |
 | D12 | **Alarmele se dau la schimbare, nu la fiecare mesaj:** o alarmă când mașina iese din zonă, nu una pe secundă cât stă afară | o alarmă la fiecare mesaj care încalcă regula |
 | D13 | **Zonele vin dintr-un fișier JSON și doar se afișează** | un editor de zone pe hartă, adică muncă de interfață, nu de rețele |
-| D14 | **Fără login.** E un singur dispecer | autentificarea ca la SCD, care nu e subiectul la Rețele |
+| D14 | ~~**Fără login.** E un singur dispecer~~ **Răsturnată pe 19 octombrie:** grila profesorului punctează login-ul și meniul cu conturi. Vezi D28 | autentificarea ca la SCD, care nu e subiectul la Rețele |
 | D15 | **Codul stă în `Facultate\An 4\Semestrul 1\RC-Proiect\`,** cu git. În AIS-OS proiectul se numește `flota-rc`. Remote-ul de pe GitHub a venit totuși, pe 8 octombrie: vezi D27 | codul în AIS-OS, care încalcă regula mamei |
 | D16 | **Metoda de lucru e cea mixtă de la SCD** (§9) | Claude scrie tot, care contrazice ținta de învățare; Tudor scrie tot, prea lent pentru 10 săptămâni |
 | D17 | **Clientul MQTT e HiveMQ MQTT Client 1.4.0,** atât în simulator, cât și în server. Adăugată pe 8 octombrie, la scrierea planului | Eclipse Paho 1.2.5: ultima versiune e din iulie 2020, verificat pe Maven Central, deci riscul R4 s-a confirmat |
@@ -78,6 +78,13 @@ iar dispeceratul arată live, pe hartă, cum supraviețuiește sistemul.
 | D25 | **Reziliența:** `ultimul_seq` gol înseamnă „nicio telemetrie văzută”, deci primul mesaj nu numără pierderi. O conectare fără `online` se desface și se reîncearcă. Mărimea bufferului e `buffer.marime` în `simulator.properties`. Adăugată pe 8 octombrie, la planul fazei 4 | pierderi numărate de la 0, care ar umfla `pierdute` la prima pornire a serverului |
 | D26 | **Faza 5:** comenzile se execută la următoarea bătaie a motorului, iar confirmarea trece prin buffer. `INTOARCE_LA_BAZA` merge înapoi pe traseu, iar oprirea la bază nu e frânare bruscă. O comandă cerută cu broker-ul deconectat dă 503. `IESIRE_DIN_ZONA` cere întâi o poziție în zonă. `VITEZA_PESTE_LIMITA` se rearmează strict sub limită. Statisticile folosesc ultimele 10 secunde și ultimele 10 mesaje live. `POST /api/retea/vreme` întoarce 200 și la `ERR`. UI-ul citește `STARE` la 3 secunde. Adăugată pe 8 octombrie, la planul fazei 5 | execuția comenzii pe firul MQTT, care s-ar bate cu motorul pe viteză și poziție |
 | D27 | **Repo-ul are remote pe GitHub: `tudorraducristian/ProiectRC`, privat.** Creat pe 8 octombrie, la cererea lui Tudor. În `docs\design\` stau copii ale spec-ului, ale planurilor și ale rezumatului de sesiune. Originalele rămân în AIS-OS, iar o schimbare se face întâi acolo, apoi se copiază. După commit-urile unui task urmează `git push` | doar git local, fără nicio copie în afara laptopului |
+| D28 | **Login cu două roluri, `ADMIN` și `DISPECER`,** după tiparul de la SCD: parolă cu BCrypt, token aleator ținut în bază, interceptor pe `/api/**` și token în `/ws?token=`. Primul `admin` îl face serverul, cu o parolă aleatoare scrisă o dată în log. Adăugată pe 19 octombrie (§16.2) | conturi și pentru mașini, la Mosquitto, cu listă de drepturi pe topic-uri: subiect de rețele, dar muncă în plus, respinsă de Tudor; Spring Security întreg, care ascunde exact mecanismul |
+| D29 | **Setările stau în tabelul `setari`:** pragul pentru `OFFLINE_PRELUNGIT` și intervalul implicit al traseului. Le schimbă doar `ADMIN`. Adăugată pe 19 octombrie (§16.3) | limitele de viteză ale zonelor, care se încarcă din `zone.json` la fiecare pornire (D13) și s-ar suprascrie |
+| D30 | **Meniul e un sertar lateral,** cu Harta, Rețea, Alarme, Setări și, doar pentru `ADMIN`, Conturi. Numele, rolul și „Ieșire” stau în bara de sus. Adăugată pe 19 octombrie (§16.4) | un meniu doar în bara de sus, înghesuit lângă chip-ul live |
+| D31 | **Articolul științific îl scrie Claude în întregime,** în engleză, pe template-ul IEEE dat de profesor. Nu se publică. Adăugată pe 19 octombrie, la cererea lui Tudor (§16.5) | Tudor scrie, iar Claude revizuiește; textul în română, deși template-ul și numele materiei sînt și în engleză |
+| D32 | **PowerPoint-ul și manualul sînt în română,** ca fișiere `.pptx` și `.docx`. PowerPoint-ul se face din articol, ca în nota *** a grilei. Adăugată pe 19 octombrie (§16.6, §16.7) | o prezentare în browser, pe care grila n-o numește |
+| D33 | **Faza 6 vine după faza 5,** iar repetiția prezentării se mută din faza 5 în ea, fiindcă are nevoie de PowerPoint. Login-ul e primul în fază, iar manualul vine după ce UI-ul e final. Adăugată pe 19 octombrie (§16.8) | login-ul înaintea fazei 3, care ar fi întârziat partea de rețele, miezul notei |
+| D34 | **Detaliile fazei 6, hotărâte la scrierea planului:** numele de cont se normalizează (`trim`, litere mici); parola are 8 caractere – 72 de octeți UTF-8, limita BCrypt; adminul nu-și resetează parola din Conturi, ci din Setări; token-urile expirate se caută o dată pe minut, iar canalele lor se închid cu codul 4001; metodele de admin poartă `@DoarAdmin`; token-ul stă în `localStorage['flota.token']`; documentele se fac cu Word și PowerPoint prin COM, din Markdown, iar figurile din SVG, cu Edge; template-ul se mută în `docs\articol\model\`; tunelul și găurile se măsoară de câte 3 ori; la repetiție, demonstrația ține sub 5 minute, iar totul sub 8. Adăugată pe 19 octombrie, odată cu planul fazei 6 | parola ca text liber de orice lungime, care la BCrypt ar da 500; resetarea propriei parole din Conturi, care l-ar scoate pe admin din aplicație |
 
 ## 3 · Arhitectura
 
@@ -97,7 +104,7 @@ iar dispeceratul arată live, pe hartă, cum supraviețuiește sistemul.
 | Proxy-ul | Dă octeții mai departe între fiecare mașină și Mosquitto și aplică vremea cerută. Primește ordine pe portul 1885 | Mosquitto; ordinele vin de la server |
 | Mosquitto | Broker-ul MQTT. N-are cod de-al nostru, doar un `mosquitto.conf` | nimic |
 | Serverul | Ascultă toate mașinile, salvează istoricul, aplică regulile de alarmă, trimite comenzi, traduce cererile de vreme în protocolul text și împinge datele live spre UI | Mosquitto, MySQL, proxy-ul |
-| UI-ul | Harta, pagina Rețea și pagina Alarme | serverul |
+| UI-ul | Harta, pagina Rețea și pagina Alarme; din faza 6, login, Setări și Conturi (§16.4) | serverul |
 
 **Cele trei drumuri:**
 
@@ -127,7 +134,8 @@ RC-Proiect\
 ├── proxy\           Java 21, Maven prin mvnw: doar JUnit 6
 ├── server\          Spring Boot 4.1, Java 21, Maven prin mvnw
 ├── web\             Vue 3, Vuetify, Leaflet, Vite, Node 24
-└── docs\            scenariul de test și scenariul prezentării
+└── docs\            scenariul de test și scenariul prezentării; din faza 6,
+                     articol\, prezentare\ și manual\ (§16)
 ```
 
 Proxy-ul n-are nicio dependență în afară de JUnit. E Java simplu, cu socket-uri,
@@ -473,7 +481,8 @@ până la rândul cu punct. Dacă proxy-ul nu răspunde în 2 secunde, endpoint-
 
 ### 6.6 · WebSocket, pentru ce se întâmplă live
 
-E un handler simplu, fără STOMP, pe `/ws`, ca la SCD, dar fără token. Mesajele
+E un handler simplu, fără STOMP, pe `/ws`, ca la SCD. Până la faza 6 merge fără
+token; din faza 6 cere `/ws?token=` (§16.2). Mesajele
 au forma `{"tip": "...", "date": {...}}`, cu tipurile:
 
 - `POZITIE`, cu semnul `din_buffer`;
@@ -530,13 +539,17 @@ locuibilă așa cum e, iar etajul următor doar o face mai bună.
 | 2 · Serverul și harta | Spring Boot, tabelele, primirea mesajelor, WebSocket-ul, harta în Vue | mașinile mișcându-se live pe hartă | 2½ săpt. |
 | 3 · Proxy-ul | dă octeții mai departe, citește `CONNECT`, aplică vremea, primește ordine pe portul 1885; simulatorul trece pe 1884 | un tunel pornit cu o comandă text | 2 săpt. |
 | 4 · Mașina rezistă | bufferul, reconectarea, numărul de ordine, `din_buffer`, contoarele, liniile punctate și golurile | linia punctată după tunel și porțiunea lipsă după gaură | 1½ săpt. |
-| 5 · Restul și repetiția | pagina Rețea, regulile de alarmă, comenzile cu confirmare, latența, repetiția prezentării | prezentarea completă (§11) | 1½ săpt. |
+| 5 · Restul | pagina Rețea, regulile de alarmă, comenzile cu confirmare, latența, scenariul prezentării; repetiția s-a mutat în faza 6 (D33) | demonstrația live completă (§11) | 1½ săpt. |
+| 6 · Login și documentele | login cu `ADMIN` și `DISPECER`, setările, meniul, articolul științific, PowerPoint-ul, manualul, repetiția prezentării (§16) | prezentarea completă, cu documentele cerute de grilă | 2 săpt. |
 
-În total, 9½ săptămâni. Pornind pe 12 octombrie 2026, se termină în jur de 18
-decembrie.
+În total, 11½ săptămâni. Planul vechi, de 9½ săptămâni, se termina în jur de 18
+decembrie. Faza 2 s-a terminat însă pe 19 octombrie, cu vreo trei săptămâni mai
+devreme, deci și cu faza 6 sfârșitul rămâne înainte de vacanță.
 
-**După faza 2, cerința e îndeplinită:** o aplicație client-server cu UI, pe temă
-IoT. Fazele 3–5 aduc nota mare la Rețele.
+**După faza 2, cerința de bază e îndeplinită:** o aplicație client-server cu UI,
+pe temă IoT. Fazele 3–5 aduc nota mare la Rețele. Faza 6 nu se taie: fără
+documentație, manual și PowerPoint, grila nu ia în calcul celelalte puncte
+(§16.1).
 
 **Ce se taie, în ordine, dacă timpul nu ajunge:**
 
@@ -561,7 +574,12 @@ Tiparele de la RC:
 4. producătorul și consumatorul, adică motorul, radioul și coada;
 5. reconectarea cu pauză care se dublează;
 6. abonarea MQTT în Spring și trimiterea pe WebSocket;
-7. harta live în Vue.
+7. harta live în Vue;
+8. din faza 6, autentificarea: token-ul, interceptorul și garda de rută din UI.
+   Tudor îl învață și la SCD, deci aici poate fi o repetiție.
+
+Articolul, PowerPoint-ul și manualul nu urmează metoda: le scrie Claude (D31,
+D32).
 
 Explicațiile urmează regula lui Tudor: întâi analogia și de ce contează, apoi
 partea tehnică.
@@ -582,6 +600,7 @@ partea tehnică.
 | server | punctul în poligon, inclusiv pe margine |
 | server | alarmele se dau la schimbare, nu la fiecare mesaj |
 | server | aceeași confirmare primită de două ori se numără o dată |
+| server | din faza 6, login-ul, token-ul, rolurile și setările (§16.9) |
 
 **De la cap la coadă,** după scenariul scris în `docs\scenariu-test.md`, rulat de
 mână la sfârșitul fazelor 3, 4 și 5:
@@ -622,6 +641,9 @@ Durează vreo 5 minute:
 Prezentarea are nevoie de internet pentru harta OpenStreetMap, de exemplu prin
 hotspot-ul telefonului.
 
+**Din faza 6:** demonstrația începe cu login-ul, ca dispecer, și stă în mijlocul
+PowerPoint-ului (§16.6). Repetiția, cu cronometrul, e ultimul pas din faza 6.
+
 ## 12 · Ce se schimbă în AIS-OS
 
 După aprobarea spec-ului, odată cu planul:
@@ -636,7 +658,8 @@ După aprobarea spec-ului, odată cu planul:
 
 ## 13 · În afara scopului
 
-- **Login și conturi** (D14).
+- ~~**Login și conturi** (D14).~~ Intră în faza 6 (D28).
+- **Conturi pentru mașini la Mosquitto** (D28).
 - **TLS, comparația măsurată de protocoale, broker-ul scris de mână,
   descoperirea pe UDP** (D4).
 - **Pierderea reală de pachete IP,** cu `clumsy` sau `netem` (D5).
@@ -653,8 +676,14 @@ După aprobarea spec-ului, odată cu planul:
 |---|---|---|
 | Î1 | **Orașul traseelor.** Hotărăște unde se desenează traseele și zonele | înainte de faza 1 |
 | Î2 | **Data vacanței de iarnă și data prezentării.** Planul se termină în jur de 18 decembrie | la următorul curs sau laborator de RC |
-| Î3 | **Ce cere profesorul la predare:** documentație scrisă, cod pe GitHub, conturi, ce acceptă la folosirea AI | la următorul curs sau laborator de RC |
+| Î3 | ~~Ce cere profesorul la predare~~ | **închisă pe 19 octombrie:** grila profesorului, cu 20 de sarcini; rezumată în §16.1. Ce acceptă la folosirea AI a rămas în Î9 |
 | Î4 | ~~Numele proiectului în AIS-OS~~ | **închisă pe 8 octombrie:** `flota-rc`, aprobat de Tudor |
+| Î5 | **Echipa:** aflat pe 19 octombrie: Tudor și un coleg formează o echipă și fac împreună flota-rc, deci presupunerea din §1, „lucrează singur”, nu mai ține. Rămân de discutat cu Tudor, mai încolo: ce componentă face și prezintă fiecare, dacă sarcinile 10–13 se acoperă prin componentele care vorbesc între ele, cum se împart documentele și legătura cu altă echipă (sarcinile 14–17). Valorează 4 puncte | de discutat cu Tudor, apoi de confirmat la profesor |
+| Î6 | **„Colectare date din Internet”:** nota pentru proiectele fără hardware cere o aplicație IoT cu mai multe servere și clienți, cu date luate din Internet. Acum datele sînt generate local. O variantă: trasee reale sau vremea reală, luate de pe net | de întrebat la profesor |
+| Î7 | **Rândurile roșii din grilă (14–18)** și numerotarea care sare de la 5 la 7 | de întrebat la profesor |
+| Î8 | **Datele de autor pentru articol:** numele complet, facultatea, universitatea, orașul și emailul, cum le cere template-ul | înainte de Task-ul cu articolul din faza 6 |
+| Î9 | **Folosirea AI:** articolul îl scrie Claude în întregime (D31). Dacă profesorul cere o mențiune, ea intră la Acknowledgment | înainte de predarea articolului |
+| Î10 | **Sarcina 5, „Conexiune Intranet sau Internet”:** acum totul ascultă pe `127.0.0.1`, pe un singur laptop. Dacă profesorul vrea două dispozitive, UI-ul se deschide de pe telefon, prin hotspot, iar serverul și Vite ascultă și pe adresa din rețea | de întrebat la profesor |
 
 **Verificat pe 8 octombrie, la scrierea planului,** pe Maven Central, în javadoc și
 pe mosquitto.org:
@@ -684,7 +713,7 @@ start.spring.io, Maven Central și npm:
 
 **Planurile:** câte unul pe fază, în `docs\superpowers\plans\`:
 `2026-10-08-flota-rc-faza-0-1.md`, apoi `…-faza-2.md`, `…-faza-3.md`,
-`…-faza-4.md` și `…-faza-5.md`.
+`…-faza-4.md` și `…-faza-5.md`. Pentru faza 6, `2026-10-19-flota-rc-faza-6.md`.
 
 ## 15 · Riscuri
 
@@ -694,5 +723,271 @@ start.spring.io, Maven Central și npm:
 | R2 | **OneDrive blochează fișiere la build,** în `target\` și `node_modules\` | același risc acceptat ca la SCD. Dacă apare, sincronizarea OneDrive se pune pe pauză cât se lucrează |
 | R3 | **Fără internet la prezentare,** deci fără imaginile hărții | hotspot-ul telefonului. Fără el, mașinile și traseele se văd pe fond gol |
 | R4 | **Biblioteca MQTT nu mai primește versiuni noi** | s-a întâmplat cu Paho, rezolvat prin D17. Folosirea bibliotecii stă în două clase, una în simulator și una în server, deci o nouă schimbare ar atinge doar acele două clase |
-| R5 | **Profesorul cere altceva la predare** | Î3, întrebat devreme. Login-ul, dacă e cerut, se ia după tiparul de la SCD |
+| R5 | **Profesorul cere altceva la predare** | s-a întâmplat: grila cere login, manual, articol și PowerPoint. Rezolvat prin faza 6 (§16). Rămân deschise Î5–Î10 |
 | R6 | **Cronometrajul găurii negre depinde de clientul MQTT și de Mosquitto,** deci cele „câteva secunde" pot varia | se măsoară în faza 4 și se trec în scenariul prezentării |
+| R7 | **Faza 6 atinge tot UI-ul și tot REST-ul,** fiindcă login-ul se adaugă la final | interceptorul e unul singur, pe `/api/**`, iar UI-ul trimite token-ul dintr-un singur loc, `api.js`. Paginile din fazele 2–5 nu se rescriu |
+| R8 | **Articolul are nevoie de cifre măsurate,** care apar abia după fazele 4 și 5 | măsurătorile se fac în faza 6, după scenariul de test (§10), cu aceleași interogări SQL; articolul nu inventează cifre |
+
+## 16 · Faza 6: login, conturi și documentele de predare
+
+*Adăugată pe 19 octombrie 2026, după grila profesorului.*
+
+**Analogia.** Până acum am construit dispeceratul. Faza 6 îi pune ușă cu
+ecuson, un panou de setări și o cutie cu acte: manualul pentru cine îl
+folosește, articolul pentru cine vrea să știe cum merge și prezentarea pentru
+ziua examenului.
+
+### 16.1 · Grila și ce o acoperă
+
+Grila are 20 de sarcini, fiecare de 0,5 puncte, deci 10 puncte. Numerotarea sare
+de la 5 la 7 (Î7).
+
+| Nr. | Sarcina | Cine o acoperă |
+|---|---|---|
+| 1 | aplicație PC, web server sau aplicație mobilă | fazele 2–5 |
+| 2 | interfață simplu de utilizat | fazele 2–6 |
+| 3 | meniu: setări, administrare conturi, log off | faza 6 (§16.3, §16.4) |
+| 4 | acces pe bază de user și parolă | faza 6 (§16.2) |
+| 5 | conexiune Intranet sau Internet, pe fir sau radio | fazele 1–5; vezi Î10 |
+| 7 | funcționare online și offline | fazele 1 și 4 |
+| 8 | structură de produs IoT | fazele 1–5 |
+| 9 | aspect de produs | fazele 2–6 |
+| 10–13 | comunicare, schimb de date, decizii și transmisie cu proiectele din propria echipă | neacoperite (Î5) |
+| 14–17 | aceleași patru, cu proiectele altei echipe (rânduri roșii) | neacoperite (Î5, Î7) |
+| 18 | manual de utilizare (rând roșu) | faza 6 (§16.7) |
+| 19 | articol științific: descriere cod, scheme logice, diagrame bloc, scheme de conexiuni, montaj hardware | faza 6 (§16.5) |
+| 20 | prezentare PowerPoint | faza 6 (§16.6) |
+| 21 | susținerea prezentării | §11, repetată în faza 6 |
+
+**Notele de subsol care contează:**
+
+- Fiecare student face un proiect independent, cu documentație, manual și
+  prezentare.
+- Un proiect fără hardware trebuie să fie o aplicație IoT cu mai multe servere
+  și clienți, cu date colectate din Internet (Î6). Componentele care lipsesc se
+  pot simula din înregistrări disponibile online.
+- **Fără documentație, manual și PowerPoint, proiectul nu poate fi susținut,
+  iar celelalte sarcini nu se punctează.** De aceea faza 6 nu se taie.
+
+### 16.2 · Login și conturi (D28)
+
+**Rolurile:**
+
+| Rol | Ce poate |
+|---|---|
+| `DISPECER` | tot ce era în fazele 2–5: harta, Rețea, Alarme, comenzile, vremea; își schimbă propria parolă; vede setările, fără să le schimbe |
+| `ADMIN` | tot ce poate dispecerul, plus conturile și salvarea setărilor |
+
+**Mecanismul, ca la SCD:**
+
+1. Parola se ține ca hash BCrypt, din `spring-security-crypto`, singura bucată
+   din Spring Security adusă în proiect.
+2. Login-ul face un token aleator: 32 de octeți din `SecureRandom`, scriși în
+   Base64 fără padding. Token-ul se ține în tabelul `tokenuri` și expiră la 8
+   ore după login, cât o zi de laborator. Termenul e fix: folosirea nu-l
+   prelungește. Ambele sînt alegerile lui Claude. Token-urile expirate se șterg
+   la fiecare login.
+3. UI-ul trimite token-ul în header-ul `Authorization: Bearer <token>`.
+4. Un interceptor pe `/api/**`, cu excepția login-ului, întoarce 401 fără un
+   token valid și 403 când rolul nu ajunge.
+5. WebSocket-ul primește token-ul în `/ws?token=`, fiindcă browserul nu poate
+   pune header-e la WebSocket. Fără un token valid, conexiunea se refuză la
+   handshake.
+6. Log off-ul șterge token-ul din bază, iar serverul închide WebSocket-urile
+   deschise cu el. Același lucru se întâmplă la ștergerea unui cont sau la
+   resetarea parolei lui. E alegerea lui Claude.
+
+**Primul cont.** La pornire, dacă nu există niciun `ADMIN`, serverul creează
+contul `admin`, cu o parolă aleatoare scrisă o singură dată în log, ca `WARN`.
+Tudor o schimbă din Setări. Astfel, nicio parolă de cont nu stă în git.
+
+**Regulile conturilor,** alese de Claude:
+
+- numele are 3–20 caractere, din `a-z`, `0-9`, `.`, `_` și `-`, și e unic;
+- parola are cel puțin 8 caractere;
+- rolul se alege la creare și nu se mai schimbă;
+- un admin nu-și poate șterge propriul cont, iar ultimul `ADMIN` nu se poate
+  șterge;
+- la ștergerea unui cont sau la resetarea parolei lui, token-urile lui se
+  șterg, deci omul e scos din aplicație.
+
+**Tabelele noi:**
+
+| Tabel | Coloanele |
+|---|---|
+| `utilizatori` | `id`, `nume` (unic), `hash_parola`, `rol` (`ADMIN`/`DISPECER`), `creat_la` |
+| `tokenuri` | `token` (cheie), `utilizator_id` (cu ștergere în cascadă), `creat_la`, `expira_la` |
+| `setari` | `cheie` (cheie), `valoare` |
+
+**Endpoint-urile noi,** în continuarea celor din §6.5:
+
+| # | Endpoint | Cine | Ce face |
+|---|---|---|---|
+| 13 | `POST /api/auth/login` | oricine | `{nume, parola}` → `{token, nume, rol}`; la greșeală, 401 cu același mesaj, fie că e greșit numele, fie parola |
+| 14 | `POST /api/auth/logout` | logat | șterge token-ul curent |
+| 15 | `GET /api/auth/eu` | logat | `{nume, rol}` |
+| 16 | `PUT /api/auth/parola` | logat | `{parolaVeche, parolaNoua}`; 400 dacă parola veche e greșită |
+| 17 | `GET /api/utilizatori` | `ADMIN` | lista conturilor, fără hash-uri |
+| 18 | `POST /api/utilizatori` | `ADMIN` | `{nume, parola, rol}` → 201; 409 dacă numele există |
+| 19 | `DELETE /api/utilizatori/{id}` | `ADMIN` | 409 pentru propriul cont sau pentru ultimul `ADMIN` |
+| 20 | `PUT /api/utilizatori/{id}/parola` | `ADMIN` | `{parolaNoua}`; șterge token-urile contului |
+| 21 | `GET /api/setari` | logat | setările din §16.3 |
+| 22 | `PUT /api/setari` | `ADMIN` | le salvează, după validare; 400 la o valoare în afara limitelor |
+
+Endpoint-urile 1–12 cer un token valid, de orice rol.
+
+**Legătura cu Rețele, pentru articol:** token-ul și parola circulă necriptate pe
+HTTP, fiindcă TLS e în afara scopului (§13). Articolul discută asta ca limită:
+ce vede cineva care ascultă rețeaua și ce ar rezolva HTTPS.
+
+### 16.3 · Setările (D29)
+
+| Cheie | Implicit | Limite | Ce schimbă |
+|---|---|---|---|
+| `offline_prelungit_secunde` | 60 | 10–3600 | pragul regulii `OFFLINE_PRELUNGIT` (§6.4), care în faza 5 e fix |
+| `traseu_minute` | 5 | 1–360 | intervalul implicit al traseului din panoul mașinii (§7) |
+
+Dacă tabelul e gol, serverul scrie valorile implicite la pornire. Pe lângă ele,
+oricine își schimbă parola, din aceeași pagină.
+
+### 16.4 · Meniul și paginile noi (D30)
+
+- **Login,** pe `/login`: numele, parola, butonul „Intră” și mesajul de eroare.
+  Fără cont nou de aici: conturile le face doar adminul.
+- **Bara de sus:** titlul, chip-ul live, numele și rolul, butonul „Ieșire”.
+- **Sertarul lateral:** Harta, Rețea, Alarme, Setări și, doar pentru `ADMIN`,
+  Conturi.
+- **Setări:** un card „Contul meu”, cu schimbarea parolei, și un card „Flota”,
+  cu pragurile din §16.3. Dispecerul vede cardul „Flota”, dar nu-l poate salva.
+- **Conturi,** doar pentru `ADMIN`: tabelul conturilor, „Cont nou” într-un
+  dialog, ștergerea cu confirmare și resetarea parolei.
+
+**În UI:**
+
+- token-ul stă în `localStorage`, ca o reîncărcare a paginii să nu scoată omul
+  din aplicație; „Ieșire” îl șterge. Alegerea e a lui Claude;
+- `api.js` pune header-ul la fiecare cerere, iar la 401 șterge token-ul și duce
+  la `/login`;
+- o gardă în router trimite la `/login` fără token, iar o rută de admin, cerută
+  fără rol, duce la Harta;
+- `live.js` deschide WebSocket-ul cu `?token=`. Când conexiunea e refuzată
+  sau închisă de server, întreabă `GET /api/auth/eu`: la 401 duce la `/login`,
+  altfel se reconectează ca până acum. E alegerea lui Claude.
+
+### 16.5 · Articolul științific (D31)
+
+- **Template-ul:** `RC-Proiect\Model articol stiintific RC.docx`, modelul IEEE
+  pentru conferințe: A4, două coloane, stilurile lui (titlu, autori, Abstract,
+  Keywords, Heading 1–5, figure caption, table head, references). Articolul se
+  scrie în copia template-ului, păstrând stilurile, iar textul de îndrumare din
+  template se scoate tot.
+- **Cine scrie:** Claude, tot textul. Tudor citește și aprobă. Nu se publică,
+  deci regulile IEEE de trimitere nu se aplică, dar forma da.
+- **Limba:** engleza. **Lungimea:** 4–6 pagini, alegerea lui Claude.
+- **Autorul:** Tudor singur, cu datele din Î8.
+
+**Structura și legătura cu grila (sarcina 19):**
+
+| Secțiunea | Ce conține | Ce cere grila |
+|---|---|---|
+| Abstract, Keywords | problema, soluția, rezultatul în cifre | |
+| I. Introduction | IoT pe rețele nesigure: o flotă care trece prin tunele | |
+| II. Related work | MQTT și alte protocoale IoT, emularea rețelei | |
+| III. System architecture | diagrama bloc a celor cinci piese; schema de conexiuni, cu porturi, protocoale și topic-uri | diagrame bloc, scheme de conexiuni |
+| IV. Implementation | mașina: motorul, radioul, bufferul; proxy-ul: `CONNECT`, vremea, protocolul text; serverul: regulile, idempotența, WebSocket-ul; autentificarea | descrierea codului, scheme logice |
+| V. Experimental evaluation | scenariul din §10, măsurat: tunelul, gaura de 10 s față de cea de 4 s, întârzierea de 500 ± 200 ms; tabele și grafice | |
+| VI. Discussion and limitations | HTTP necriptat, un singur laptop, mașini simulate | |
+| VII. Conclusion | | |
+| Acknowledgment | după răspunsul la Î9 | |
+| References | cel puțin 8 surse reale, de exemplu standardul MQTT 3.1.1 (OASIS), RFC 6455 pentru WebSocket, RFC 9293 pentru TCP, articolul despre Mosquitto din JOSS (2017) și BCrypt (Provos și Mazières, 1999) | |
+
+**Figurile,** cel puțin:
+
+- diagrama bloc a sistemului;
+- schema de conexiuni;
+- două scheme logice: reconectarea cu pauză care se dublează și citirea
+  pachetului `CONNECT`;
+- graficul unui tunel și al unei găuri, cu mesajele pierdute și recuperate;
+- graficul latenței sub `INTARZIERE`;
+- o captură a hărții.
+
+„Montajul hardware” din grilă nu se aplică: articolul spune că proiectul e doar
+software, cum permit notele grilei.
+
+**Cifrele:** se măsoară în faza 6, după scenariul din §10, pe codul final, cu
+interogări SQL păstrate lângă articol (R8).
+
+**Fișierele:** `RC-Proiect\docs\articol\`, cu articolul `.docx`, figurile și
+sursele lor, ca să poată fi refăcute. Unealta pentru figuri o alege planul.
+
+### 16.6 · PowerPoint-ul (D32)
+
+- Un fișier `.pptx`, în română, făcut din articol, pentru prezentarea de vreo 5
+  minute din §11.
+- Vreo 10 slide-uri:
+  1. titlul;
+  2. problema: o flotă care pierde semnalul;
+  3. arhitectura;
+  4. MQTT și nivelurile de QoS;
+  5. proxy-ul și „vremea”;
+  6. demonstrația live, după pașii din §11, cu login-ul la început;
+  7. rezultatele măsurate;
+  8. login-ul și limitele de securitate;
+  9. ce n-am făcut și ce ar urma;
+  10. concluziile și întrebările.
+- Figurile sînt cele din articol.
+- Fișierul: `RC-Proiect\docs\prezentare\flota-rc.pptx`.
+
+### 16.7 · Manualul de utilizare (D32)
+
+- Un fișier `.docx`, în română, pentru cineva care n-a văzut proiectul, cu
+  capturi de ecran din aplicația finală.
+- Capitolele:
+  1. ce este aplicația;
+  2. ce trebuie instalat: Java 21, Node 24, MySQL 8.4 și Mosquitto 2.1.2, plus
+     crearea bazei;
+  3. pornirea pieselor, în ordine;
+  4. login-ul și contul de admin;
+  5. Harta;
+  6. Rețea;
+  7. Alarme;
+  8. Setări și Conturi;
+  9. probleme frecvente, de exemplu „Access denied” la MySQL, un port ocupat,
+     OneDrive care blochează build-ul și broker-ul oprit.
+- Fișierul: `RC-Proiect\docs\manual\manual-flota-rc.docx`, cu capturile în
+  `docs\manual\capturi\`.
+
+### 16.8 · Ordinea în faza 6 (D33)
+
+1. Login-ul, conturile, setările și meniul.
+2. Măsurătorile pentru articol.
+3. Articolul.
+4. PowerPoint-ul, din articol.
+5. Manualul, cu capturile din UI-ul final.
+6. Repetiția prezentării, cu cronometrul, și verificarea finală. Repetiția vine
+   din Task 16 al planului fazei 5. Planul fazei 5 se ajustează odată cu
+   scrierea planului fazei 6: Task 16 păstrează scenariul și verificarea fazei 5.
+
+Copia spec-ului din `RC-Proiect\docs\design\` se actualizează după regula D27,
+în același commit cu primul cod din faza 6.
+
+Durata e de vreo 2 săptămâni.
+
+### 16.9 · Testele fazei 6
+
+Automate, cu JUnit 6, în server:
+
+- BCrypt: parola bună trece, cea greșită nu;
+- fără token, cu token necunoscut sau expirat: 401;
+- dispecerul pe un endpoint de admin: 403;
+- primul `admin` se face doar când nu există niciun `ADMIN`;
+- propriul cont și ultimul `ADMIN` nu se pot șterge;
+- schimbarea parolei cere parola veche, iar resetarea ei șterge token-urile;
+- setările în afara limitelor dau 400;
+- WebSocket-ul fără token valid e refuzat.
+
+UI-ul se verifică de mână: login, log off, ruta de admin cerută de un dispecer,
+reîncărcarea paginii și o sesiune expirată.
+
+Documentele se verifică citindu-le: articolul și manualul, randate ca PDF și
+privite pagină cu pagină; PowerPoint-ul, slide cu slide.

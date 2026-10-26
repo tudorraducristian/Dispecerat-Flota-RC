@@ -64,3 +64,25 @@ CREATE TABLE IF NOT EXISTS evenimente_retea (
   ora_start   DATETIME(3)  NOT NULL,
   ora_sfarsit DATETIME(3)  NULL
 );
+
+CREATE TABLE IF NOT EXISTS utilizatori (
+  id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  nume        VARCHAR(20)  NOT NULL UNIQUE,
+  hash_parola VARCHAR(100) NOT NULL,
+  rol         VARCHAR(10)  NOT NULL,
+  creat_la    DATETIME(3)  NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tokenuri (
+  token         CHAR(43)    NOT NULL PRIMARY KEY,
+  utilizator_id BIGINT      NOT NULL,
+  creat_la      DATETIME(3) NOT NULL,
+  expira_la     DATETIME(3) NOT NULL,
+  INDEX idx_tokenuri_expira (expira_la),
+  CONSTRAINT fk_tokenuri_utilizator FOREIGN KEY (utilizator_id) REFERENCES utilizatori (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS setari (
+  cheie   VARCHAR(40) NOT NULL PRIMARY KEY,
+  valoare VARCHAR(40) NOT NULL
+);

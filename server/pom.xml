@@ -45,6 +45,11 @@
       <artifactId>hivemq-mqtt-client</artifactId>
       <version>${hivemq.version}</version>
     </dependency>
+    <!-- Doar BCrypt, pentru parole (D28). Versiunea o dă Spring Boot. -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-crypto</artifactId>
+    </dependency>
 
     <!-- Aduce JUnit, Mockito și @WebMvcTest (MasiniControllerTest). Starter-ele jdbc-test și websocket-test
          nu le folosea niciun test, deci au ieșit (registrul fazei 2). -->

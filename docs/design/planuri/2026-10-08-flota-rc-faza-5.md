@@ -1,4 +1,7 @@
-# flota-rc, faza 5: restul și repetiția — plan de implementare
+# flota-rc, faza 5: restul — plan de implementare
+
+> **Din 19 octombrie,** repetiția prezentării e în planul fazei 6, Task 14
+> (spec D33). Task 16 de aici păstrează scenariul și verificarea fazei 5.
 
 > **Pentru agenți:** SUB-SKILL OBLIGATORIU: superpowers:subagent-driven-development
 > (recomandat) sau superpowers:executing-plans, ca planul să fie executat task cu
@@ -4691,10 +4694,14 @@ git commit -m "UI: istoricul traseului pe interval"
 
 ---
 
-### Task 16: Scenariul prezentării, repetiția și verificarea finală
+### Task 16: Scenariul prezentării și verificarea finală a fazei 5
 
 **Cine face:** Claude scrie scenariul prezentării și README-ul. Tudor rulează
-scenariul de test complet și face repetiția, cu cronometrul.
+scenariul de test complet.
+
+**Schimbat pe 19 octombrie (spec D33):** repetiția s-a mutat în planul fazei 6,
+Task 14, fiindcă are nevoie de PowerPoint. Aici rămân scenariul și verificarea
+fazei 5.
 
 **Fișiere:**
 - Creează: `docs\scenariu-prezentare.md`
@@ -4913,11 +4920,9 @@ Oprește P. Se așteaptă:
 
 Pornește P la loc.
 
-- [ ] **Pasul 7: Repetiția, de două ori**
-
-Tudor parcurge `docs\scenariu-prezentare.md` de două ori, cu cronometrul, de la
-„Cu 15 minute înainte” până la pasul 6. Ținta e sub 5 minute. Claude notează ce
-s-a încurcat, iar scenariul se corectează după fiecare repetiție.
+- [ ] **Pasul 7: ~~Repetiția, de două ori~~** Mutată în planul fazei 6, Task 14
+  (spec D33). Aici, o singură trecere prin `docs\scenariu-prezentare.md`, fără
+  cronometru, ca să se vadă că pașii 1–6 merg pe codul fazei 5.
 
 - [ ] **Pasul 8: Commit în proiect**
 
@@ -4931,24 +4936,25 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - [ ] **Pasul 9: Actualizează starea în AIS-OS**
 
 În `Facultate\memory\stare.md`, la blocul de RC, rândul „Unde am rămas” devine,
-cu data zilei în care se termină pasul 7, în formatul AAAA-LL-ZZ:
+cu data zilei în care se termină pasul 7, adică trecerea fără cronometru, în
+formatul AAAA-LL-ZZ:
 
 ```markdown
-- **Unde am rămas:** proiectul e gata pe AAAA-LL-ZZ: toate cele cinci faze,
-  scenariul de test trece, iar prezentarea, din `docs\scenariu-prezentare.md`,
-  a fost repetată de două ori, sub 5 minute. Rămân întrebările pentru profesor:
-  data prezentării și ce cere la predare (spec §14, Î2 și Î3).
+- **Unde am rămas:** faza 5 e gata pe AAAA-LL-ZZ: comenzile, alarmele, pagina
+  Rețea și latența merg, iar scenariul de test trece. Scenariul prezentării e
+  în `docs\scenariu-prezentare.md`. Următorul pas: faza 6, login-ul și
+  documentele, după `docs\superpowers\plans\2026-10-19-flota-rc-faza-6.md`.
 ```
 
-În `Facultate\flota-rc\CLAUDE.md`, „Stadiu” devine:
-`Stadiu: gata de prezentare, pe AAAA-LL-ZZ.`
+În `Facultate\flota-rc\CLAUDE.md`, „Stadiu” primește propoziția:
+`Faza 5 e gata pe AAAA-LL-ZZ; urmează faza 6, login-ul și documentele.`
 
 - [ ] **Pasul 10: Commit în AIS-OS, după ce Tudor spune da**
 
 ```bash
 cd "/c/Users/40747/OneDrive/Documents/AIS-OS"
 git add Facultate/memory/stare.md Facultate/flota-rc/CLAUDE.md
-git commit -m "flota-rc gata de prezentare
+git commit -m "Starea Facultate: flota-rc, faza 5 gata
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
