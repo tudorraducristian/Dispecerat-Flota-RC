@@ -73,6 +73,22 @@ class ServiciuAutentificareTest {
         verify(utilizatori).dupaNume("ana");
     }
 
+    /** Review-ul final: BCrypt nu primește peste 72 de octeți; o parolă lungă tastată la login e doar greșită. */
+    @Test
+    void parolaPeste72DeOctetiLaLoginDa401() {
+        assertEquals("nume sau parolă greșită",
+                assertThrows(Neautorizat.class, () -> serviciu.login("ana", "ș".repeat(37))).getMessage());
+        assertEquals("nume sau parolă greșită",
+                assertThrows(Neautorizat.class, () -> serviciu.login("ion", "a".repeat(100))).getMessage());
+    }
+
+    @Test
+    void parolaVechePeste72DeOctetiDa400() {
+        UtilizatorCurent eu = new UtilizatorCurent(1, "ana", Rol.DISPECER, "t");
+        assertEquals("parola veche e greșită", assertThrows(CerereGresita.class,
+                () -> serviciu.schimbaParola(eu, "a".repeat(100), "parola-noua")).getMessage());
+    }
+
     @Test
     void logoutStergeTokenulSiInchideCanalele() {
         serviciu.logout(new UtilizatorCurent(1, "ana", Rol.DISPECER, "t"));
