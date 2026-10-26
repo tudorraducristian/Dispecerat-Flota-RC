@@ -48,10 +48,11 @@ class IntervalTest {
         assertTrue(eroare("2026-12-10T10:00:00Z", "2026-12-10T09:00:00Z").contains("înainte"));
     }
 
+    /** Registrul fazei 2: înainte verifica doar că mesajul conține „de”, ceea ce trece aproape orice text. */
     @Test
     void oraScrisaGresitEstePusaPeNume() {
-        String mesaj = eroare("ieri", null);
-        assertTrue(mesaj.contains("de") && mesaj.contains("ieri"), mesaj);
+        assertEquals("„de” nu e o oră ISO-8601 în UTC: ieri", eroare("ieri", null));
+        assertEquals("„pana” nu e o oră ISO-8601 în UTC: mâine", eroare(null, "mâine"));
     }
 
     @Test

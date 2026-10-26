@@ -1,12 +1,14 @@
 package ro.flota.server.mqtt;
 
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
+import com.hivemq.client.mqtt.lifecycle.MqttDisconnectSource;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
 import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -26,6 +28,7 @@ import ro.flota.server.flota.Dispecer;
 public class ClientMqtt implements ApplicationRunner, DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(ClientMqtt.class);
+    static final long PAUZA_MAXIMA_RECONECTARE_S = 10;
 
     private final Decodor decodor;
     private final Dispecer dispecer;
@@ -41,16 +44,30 @@ public class ClientMqtt implements ApplicationRunner, DisposableBean {
                 .identifier("dispecer")
                 .serverHost(host)
                 .serverPort(port)
-                .automaticReconnectWithDefaultConfig()
+                // Implicit, pauza crește până la 2 minute; după o pană lungă a broker-ului, serverul revenea
+                // abia după vreo 150 s. Cu 10 s, revine repede și la o schimbare de broker în timpul prezentării.
+                .automaticReconnect()
+                    .initialDelay(1, TimeUnit.SECONDS)
+                    .maxDelay(PAUZA_MAXIMA_RECONECTARE_S, TimeUnit.SECONDS)
+                    .applyAutomaticReconnect()
                 .addConnectedListener(context -> {
                     log.info("Conectat la Mosquitto");
                     aboneaza();
                 })
-                .addDisconnectedListener(context ->
-                        log.warn("Deconectat de la Mosquitto ({}); reîncerc singur", context.getCause().getMessage()))
+                .addDisconnectedListener(context -> scrieDeconectarea(context.getSource(), context.getCause()))
                 .buildAsync();
         // Filtrul global prinde și mesajele păstrate în sesiunea persistentă, care sosesc imediat după CONNACK (D22).
         client.publishes(MqttGlobalPublishFilter.ALL, this::primeste, fir);
+    }
+
+    /** USER înseamnă că am cerut noi deconectarea, la oprirea serverului: atunci nu e nimic de reîncercat. */
+    static void scrieDeconectarea(MqttDisconnectSource sursa, Throwable cauza) {
+        if (sursa == MqttDisconnectSource.USER) {
+            log.info("Deconectat de la Mosquitto, la oprirea serverului");
+        } else {
+            log.warn("Deconectat de la Mosquitto ({}); reîncerc singur, cel mult la {} secunde",
+                    cauza.getMessage(), PAUZA_MAXIMA_RECONECTARE_S);
+        }
     }
 
     /** Conectarea e asincronă: dacă Mosquitto e oprit, serverul pornește oricum și reîncearcă singur. */
