@@ -1,17 +1,42 @@
+import { sesiune, uita } from './sesiune.js'
+
+const LOGIN = '/api/auth/login'
+
+/**
+ * Ce face UI-ul când serverul spune 401: îl setează main.js, cu trimiterea la /login. Astfel api.js nu importă
+ * router-ul, iar router-ul, care importă paginile, nu ajunge să se importe singur prin api.js.
+ */
+let laNeautorizat = () => {}
+
+export function seteazaLaNeautorizat(f) {
+  laNeautorizat = f
+}
+
 /** Toate cererile REST trec pe aici. Vite le trimite mai departe la serverul de pe 8080. */
 async function cere(cale, optiuni = {}) {
-  const raspuns = await fetch(cale, {
-    ...optiuni,
-    headers: { 'Content-Type': 'application/json', ...(optiuni.headers ?? {}) },
-  })
+  const headers = { 'Content-Type': 'application/json', ...(optiuni.headers ?? {}) }
+  if (sesiune.token) headers.Authorization = `Bearer ${sesiune.token}`
+  const raspuns = await fetch(cale, { ...optiuni, headers })
   const corp = raspuns.status === 204 ? null : await raspuns.json().catch(() => null)
+  // Un 401 în afara login-ului înseamnă token expirat sau anulat: omul e scos din aplicație.
+  if (raspuns.status === 401 && cale !== LOGIN) {
+    uita()
+    laNeautorizat()
+  }
   if (!raspuns.ok) {
-    throw new Error(corp?.mesaj ?? `serverul a răspuns ${raspuns.status}`)
+    const eroare = new Error(corp?.mesaj ?? `serverul a răspuns ${raspuns.status}`)
+    eroare.status = raspuns.status
+    throw eroare
   }
   return corp
 }
 
 export const api = {
+  login: (nume, parola) => cere(LOGIN, { method: 'POST', body: JSON.stringify({ nume, parola }) }),
+  logout: () => cere('/api/auth/logout', { method: 'POST' }),
+  eu: () => cere('/api/auth/eu'),
+  schimbaParola: (veche, noua) =>
+    cere('/api/auth/parola', { method: 'PUT', body: JSON.stringify({ parolaVeche: veche, parolaNoua: noua }) }),
   masini: () => cere('/api/masini'),
   masina: (id) => cere(`/api/masini/${id}`),
   traseu: (id, de, pana) => {

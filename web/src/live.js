@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import { api } from './api.js'
+import { sesiune } from './sesiune.js'
 
 /** Tabla dispecerului: ce știe UI-ul acum despre flotă și despre rețea. O citesc toate componentele. */
 export const flota = reactive({
@@ -58,30 +59,78 @@ export async function actualizeazaVremea() {
   }
 }
 
+let intervalVreme = null
+
 /** STARE la 3 secunde: tunelurile și găurile se termină singure, fără vreun eveniment (D26). */
 export function pornesteVremea() {
+  opresteVremea()
   actualizeazaVremea()
-  setInterval(actualizeazaVremea, 3000)
+  intervalVreme = setInterval(actualizeazaVremea, 3000)
 }
 
-/** Deschide canalul live. Dacă se închide, inclusiv când serverul e oprit, reîncearcă la 2 secunde. */
+export function opresteVremea() {
+  clearInterval(intervalVreme)
+  intervalVreme = null
+}
+
+let ws = null
+let oprireCeruta = false
+let reconectare = null
+
+/**
+ * Deschide canalul live, cu token-ul în adresă: browserul nu poate pune header-e la WebSocket (spec §16.2).
+ * Pornește abia după login, fiindcă fără token serverul refuză handshake-ul.
+ */
 export function pornesteLive() {
-  const ws = new WebSocket(`ws://${location.host}/ws`)
-  ws.onopen = () => {
+  oprireCeruta = false
+  clearTimeout(reconectare)
+  const canal = new WebSocket(`ws://${location.host}/ws?token=${encodeURIComponent(sesiune.token ?? '')}`)
+  ws = canal
+  canal.onopen = () => {
     flota.conectat = true
     stariLive.clear()
     // Ce s-a întâmplat cât canalul a fost închis se ia din REST.
     incarcaMasini().catch((e) => console.warn('nu pot încărca mașinile:', e.message))
   }
-  ws.onclose = () => {
+  canal.onclose = () => {
+    if (canal !== ws) return // un canal vechi, înlocuit între timp
     flota.conectat = false
-    setTimeout(pornesteLive, 2000)
+    if (!oprireCeruta) dupaInchidere()
   }
-  ws.onmessage = (e) => {
+  canal.onmessage = (e) => {
     const { tip, date } = JSON.parse(e.data)
     aplica(tip, date)
     ascultatori.forEach((f) => f(tip, date))
   }
+}
+
+/**
+ * Canalul s-a închis fără să fi cerut noi. Întreb serverul cine sînt: dacă răspunde, reîncerc la 2 secunde;
+ * la 401, api.js a trimis deja la /login; la o eroare de rețea, cu serverul oprit, reîncerc tot la 2 secunde.
+ */
+function dupaInchidere() {
+  api
+    .eu()
+    .then(programeazaReconectarea)
+    .catch((e) => {
+      if (e.status !== 401) programeazaReconectarea()
+    })
+}
+
+function programeazaReconectarea() {
+  clearTimeout(reconectare)
+  reconectare = setTimeout(() => {
+    if (!oprireCeruta && sesiune.token) pornesteLive()
+  }, 2000)
+}
+
+/** La ieșire: închide canalul și nu mai încearcă să-l redeschidă. */
+export function opresteLive() {
+  oprireCeruta = true
+  clearTimeout(reconectare)
+  if (ws) ws.close()
+  ws = null
+  flota.conectat = false
 }
 
 function aplica(tip, date) {
