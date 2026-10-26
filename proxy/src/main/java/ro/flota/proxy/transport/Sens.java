@@ -96,10 +96,7 @@ final class Sens {
                 }
                 out.write(bucata.octeti());
                 out.flush();
-                int kbps = vreme.bandaKbps();
-                if (kbps > 0) {
-                    Thread.sleep(bucata.octeti().length * 8L / kbps); // kbps = biți pe milisecundă
-                }
+                asteaptaBanda(bucata.octeti().length);
             }
         } catch (InterruptedException e) {
             return; // oprit de Legatura
@@ -115,6 +112,20 @@ final class Sens {
         long ramas;
         while ((ramas = plecareMs - System.currentTimeMillis()) > 0) {
             Thread.sleep(Math.min(ramas, PAS_ASTEPTARE_MS));
+        }
+    }
+
+    /**
+     * Banda îngustă: după o bucată, așteaptă cât i-ar lua să treacă prin bandă (kbps = biți pe milisecundă).
+     * Pe pași de 100 ms, cu banda citită din nou la fiecare pas, ca NORMAL sau o bandă nouă să se vadă repede.
+     */
+    private void asteaptaBanda(int octeti) throws InterruptedException {
+        long bitiRamasi = octeti * 8L;
+        int kbps;
+        while (bitiRamasi > 0 && (kbps = vreme.bandaKbps()) > 0) {
+            long pas = Math.min(PAS_ASTEPTARE_MS, (bitiRamasi + kbps - 1) / kbps);
+            Thread.sleep(pas);
+            bitiRamasi -= pas * kbps;
         }
     }
 

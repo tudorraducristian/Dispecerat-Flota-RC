@@ -68,17 +68,69 @@ class SensTest {
         intrare.close();
     }
 
+    /** Verifică doar că octeții nu ies mai devreme; o oprire lungă a JVM-ului nu-l poate face să pice. */
     @Test
     void gauraTineOctetiiPanaTrece() throws Exception {
         vreme.gaura(1);
         Sens s = sens();
         s.porneste();
+        long inceput = System.currentTimeMillis();
         intrare.write("abc".getBytes(StandardCharsets.US_ASCII));
         intrare.flush();
-        Thread.sleep(500);
-        assertEquals(0, iesire.size(), "în gaură nu trebuie să treacă nimic");
-        asteapta(() -> iesire.size() == 3, 2_000);
+        asteapta(() -> iesire.size() == 3, 3_000);
         assertEquals("abc", iesire.toString(StandardCharsets.US_ASCII));
+        assertTrue(System.currentTimeMillis() - inceput >= 800, "octeții au ieșit înainte să treacă gaura");
+        intrare.close();
+    }
+
+    @Test
+    void normalElibereazaGaura() throws Exception {
+        vreme.gaura(60);
+        Sens s = sens();
+        s.porneste();
+        intrare.write("abc".getBytes(StandardCharsets.US_ASCII));
+        intrare.flush();
+        Thread.sleep(300);
+        assertEquals(0, iesire.size(), "în gaură nu trebuie să treacă nimic");
+        vreme.normal();
+        asteapta(() -> iesire.size() == 3, 1_000);
+        assertEquals("abc", iesire.toString(StandardCharsets.US_ASCII));
+        intrare.close();
+    }
+
+    /** Cu 8 kbps trec 8 biți pe milisecundă, adică un octet: după 1 000 de octeți, următorii așteaptă vreo secundă. */
+    @Test
+    void bandaIngustaIntarzieUrmatoareaBucata() throws Exception {
+        vreme.banda(8);
+        Sens s = sens();
+        s.porneste();
+        intrare.write(new byte[1_000]);
+        intrare.flush();
+        asteapta(() -> iesire.size() == 1_000, 2_000);
+        long inceput = System.currentTimeMillis();
+        intrare.write('x');
+        intrare.flush();
+        asteapta(() -> iesire.size() == 1_001, 3_000);
+        assertEquals(1_001, iesire.size());
+        assertTrue(System.currentTimeMillis() - inceput >= 700, "banda n-a ținut bucata următoare");
+        intrare.close();
+    }
+
+    /** Registrul fazei 3: la BANDA 1, o bucată de 1 000 de octeți ținea 8 secunde, chiar și după NORMAL. */
+    @Test
+    void normalOpresteBandaInCurs() throws Exception {
+        vreme.banda(1);
+        Sens s = sens();
+        s.porneste();
+        intrare.write(new byte[1_000]);
+        intrare.flush();
+        asteapta(() -> iesire.size() == 1_000, 2_000);
+        intrare.write('x');
+        intrare.flush();
+        Thread.sleep(200);
+        vreme.normal();
+        asteapta(() -> iesire.size() == 1_001, 1_000);
+        assertEquals(1_001, iesire.size(), "după NORMAL, banda trebuie să se oprească repede");
         intrare.close();
     }
 
