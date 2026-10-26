@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.regex.Pattern;
 import ro.flota.proxy.connect.CititorConnect;
 import ro.flota.proxy.connect.PachetConnect;
 import ro.flota.proxy.vreme.Registru;
@@ -20,6 +21,9 @@ public final class AscultatorMasini implements Runnable {
     private static final int TIMP_CONNECT_MS = 10_000;
     private static final int TIMP_CONECTARE_BROKER_MS = 5_000;
     private static final int PAS_TUNEL_MS = 200;
+    private static final Pattern ID_MASINA = Pattern.compile("masina-[0-9]+");
+    /** CONNACK cu codul 2, „identifier rejected” (MQTT 3.1.1 §3.2.2.3): tipul 0x20, lungimea 2, flag-uri 0, codul. */
+    private static final byte[] CONNACK_ID_RESPINS = {0x20, 0x02, 0x00, 0x02};
 
     private final ServerSocket server;
     private final InetSocketAddress broker;
@@ -59,6 +63,10 @@ public final class AscultatorMasini implements Runnable {
             return;
         }
         String id = connect.clientId();
+        if (!ID_MASINA.matcher(id).matches()) {
+            refuza(id, masina);
+            return;
+        }
         Vreme vreme = registru.vreme(id);
         if (vreme.inTunel()) {
             tineInTunel(id, masina, vreme);
@@ -80,6 +88,21 @@ public final class AscultatorMasini implements Runnable {
             inchide(spreBroker);
             inchide(masina);
         }
+    }
+
+    /**
+     * Prin proxy trec doar mașinile flotei. Altcineva, de exemplu un mosquitto_sub pus din greșeală pe 1884,
+     * primește un CONNACK care spune de ce și nu ajunge nici la broker, nici în STARE.
+     */
+    private static void refuza(String id, Socket client) {
+        System.out.printf("Refuz clientul „%s”: prin proxy trec doar mașinile, masina-N%n", id);
+        try {
+            client.getOutputStream().write(CONNACK_ID_RESPINS);
+            client.getOutputStream().flush();
+        } catch (IOException e) {
+            // A închis deja.
+        }
+        inchide(client);
     }
 
     /**

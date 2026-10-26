@@ -57,10 +57,26 @@ public final class ServerOrdine implements Runnable {
                     out.write('\n');
                 }
                 out.flush();
-                System.out.printf("Ordine: %s → %s%n", linie.preaLunga() ? "(linie prea lungă)" : linie.text(), raspuns.get(0));
+                String jurnal = randJurnal(linie, raspuns);
+                if (jurnal != null) {
+                    System.out.println(jurnal);
+                }
             }
         } catch (IOException e) {
             // Clientul a închis conexiunea.
         }
+    }
+
+    /**
+     * Rândul din consolă pentru o ordine, sau null dacă nu merită scris. Un STARE reușit doar citește, iar
+     * serverul îl cere la 3 secunde din fiecare tab deschis (faza 5): scris, ar îneca restul jurnalului.
+     */
+    static String randJurnal(Linie linie, List<String> raspuns) {
+        boolean stareReusita = !linie.preaLunga() && linie.text().trim().equalsIgnoreCase("STARE")
+                && !raspuns.get(0).startsWith("ERR");
+        if (stareReusita) {
+            return null;
+        }
+        return String.format("Ordine: %s → %s", linie.preaLunga() ? "(linie prea lungă)" : linie.text(), raspuns.get(0));
     }
 }

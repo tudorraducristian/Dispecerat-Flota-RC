@@ -3,13 +3,13 @@ package ro.flota.proxy.connect;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-/** Pachete CONNECT construite de mână, octet cu octet, după tabelul din spec §5.2. */
-final class Pachete {
+/** Pachete CONNECT construite de mână, octet cu octet, după tabelul din spec §5.2. Le folosesc și alte pachete. */
+public final class Pachete {
 
     private Pachete() {
     }
 
-    static byte[] connect(String clientId) {
+    public static byte[] connect(String clientId) {
         return connect(clientId, 4, new byte[0]);
     }
 
