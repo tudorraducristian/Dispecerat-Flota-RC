@@ -33,6 +33,11 @@ public class EroriApi {
         return raspuns(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
+    @ExceptionHandler(Conflict.class)
+    ResponseEntity<Eroare> conflict(Conflict e) {
+        return raspuns(HttpStatus.CONFLICT, e.getMessage());
+    }
+
     @ExceptionHandler(ServiciuIndisponibil.class)
     ResponseEntity<Eroare> indisponibil(ServiciuIndisponibil e) {
         return raspuns(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
