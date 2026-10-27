@@ -12,11 +12,12 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: PaginaLogin, meta: { public: true } },
-    { path: '/', component: PaginaHarta },
-    { path: '/retea', component: PaginaRetea },
-    { path: '/alarme', component: PaginaAlarme },
-    { path: '/setari', component: PaginaSetari },
-    { path: '/conturi', component: PaginaConturi, meta: { doarAdmin: true } },
+    // titlu e numele din bara de telefon (redesign §10.3).
+    { path: '/', component: PaginaHarta, meta: { titlu: 'Harta' } },
+    { path: '/retea', component: PaginaRetea, meta: { titlu: 'Rețea' } },
+    { path: '/alarme', component: PaginaAlarme, meta: { titlu: 'Alarme' } },
+    { path: '/setari', component: PaginaSetari, meta: { titlu: 'Setări' } },
+    { path: '/conturi', component: PaginaConturi, meta: { doarAdmin: true, titlu: 'Conturi' } },
   ],
 })
 

@@ -30,6 +30,11 @@
   --live: #22C55E;
   --live-text: #4ADE80;
 
+  /* pe bleumarin: bara, meniul, jurnalul; din machetele barei și ale meniului */
+  --pe-bleumarin-text: #CBD5E1;
+  --pe-bleumarin-linie: #334155;
+  --pe-bleumarin-activ: #60A5FA;
+
   /* fonturi, locale, din @fontsource */
   --font: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;

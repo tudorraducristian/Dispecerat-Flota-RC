@@ -5,26 +5,8 @@
       <router-view />
     </v-main>
     <template v-else>
-      <v-app-bar color="primary" density="compact">
-        <v-app-bar-nav-icon @click="meniu = !meniu" />
-        <v-app-bar-title>Dispecerat flotă</v-app-bar-title>
-        <template #append>
-          <v-chip :color="flota.conectat ? 'success' : 'error'" variant="flat" size="small" class="mr-2">
-            {{ flota.conectat ? 'live' : 'fără legătură cu serverul' }}
-          </v-chip>
-          <span v-if="sesiune.nume" class="text-body-2 mr-2">{{ sesiune.nume }} · {{ sesiune.rol }}</span>
-          <v-btn variant="text" prepend-icon="mdi-logout" @click="iesire">Ieșire</v-btn>
-        </template>
-      </v-app-bar>
-      <v-navigation-drawer v-model="meniu" temporary>
-        <v-list nav>
-          <v-list-item to="/" exact prepend-icon="mdi-map" title="Harta" />
-          <v-list-item to="/retea" prepend-icon="mdi-access-point-network" title="Rețea" />
-          <v-list-item to="/alarme" prepend-icon="mdi-bell" title="Alarme" />
-          <v-list-item to="/setari" prepend-icon="mdi-cog" title="Setări" />
-          <v-list-item v-if="admin" to="/conturi" prepend-icon="mdi-account-multiple" title="Conturi" />
-        </v-list>
-      </v-navigation-drawer>
+      <BaraSus @comuta-meniul="comutaMeniul" @iesire="iesire" />
+      <MeniuLateral :deschis="meniu" @inchide="meniu = false" @iesire="iesire" />
       <v-main>
         <router-view />
       </v-main>
@@ -40,34 +22,53 @@
 
 <script>
 import { api } from './api.js'
-import { flota, asculta, pornesteLive, opresteLive, pornesteVremea, opresteVremea } from './live.js'
-import { sesiune, uita, asiguraUtilizatorul, esteAdmin } from './sesiune.js'
+import { asculta, pornesteLive, opresteLive, pornesteVremea, opresteVremea } from './live.js'
+import { sesiune, uita, asiguraUtilizatorul } from './sesiune.js'
+import { pornesteNumararea, opresteNumararea } from './numarAlarme.js'
+import BaraSus from './components/BaraSus.vue'
+import MeniuLateral from './components/MeniuLateral.vue'
+
+/** Starea meniului de laptop rămâne după F5 (redesign §4.3); pe telefon sertarul pornește mereu închis. */
+const CHEIE_MENIU = 'flota.meniu'
+
+function meniulDeLaptop() {
+  try {
+    return localStorage.getItem(CHEIE_MENIU) !== 'strans'
+  } catch {
+    return true // stocarea blocată de browser
+  }
+}
 
 export default {
   name: 'App',
+  components: { BaraSus, MeniuLateral },
   data() {
-    return { flota, sesiune, meniu: false, notificare: { vizibila: false, masina: '', tip: '', detalii: '' } }
-  },
-  computed: {
-    /** Conturi apare în meniu doar pentru admin; garda din router oprește și adresa scrisă de mână. */
-    admin() {
-      return esteAdmin()
-    },
+    return {
+      sesiune,
+      meniu: this.$vuetify.display.mobile ? false : meniulDeLaptop(),
+      notificare: { vizibila: false, masina: '', tip: '', detalii: '' },
+    }
   },
   watch: {
-    /** Canalul live și vremea merg doar cu token: pornesc la login și se opresc la ieșire. */
+    /** Canalul live, vremea și cifra de alarme merg doar cu token: pornesc la login și se opresc la ieșire. */
     'sesiune.token': {
       immediate: true,
       handler(token) {
         if (token) {
           pornesteLive()
           pornesteVremea()
+          pornesteNumararea()
           asiguraUtilizatorul().catch(() => {}) // la 401, api.js trimite deja la /login
         } else {
           opresteLive()
           opresteVremea()
+          opresteNumararea()
         }
       },
+    },
+    /** Peste prag, în orice sens, meniul ia starea potrivită: închis pe telefon, cea ținută minte pe laptop. */
+    '$vuetify.display.mobile'(mobil) {
+      this.meniu = mobil ? false : meniulDeLaptop()
     },
   },
   mounted() {
@@ -79,6 +80,15 @@ export default {
     })
   },
   methods: {
+    comutaMeniul() {
+      this.meniu = !this.meniu
+      if (this.$vuetify.display.mobile) return
+      try {
+        localStorage.setItem(CHEIE_MENIU, this.meniu ? 'deschis' : 'strans')
+      } catch {
+        // Rămâne așa doar până la reîncărcare.
+      }
+    },
     /** Întâi canalul, ca închiderea lui de la server, cu 4001, să nu pară o cădere. */
     async iesire() {
       opresteLive()
