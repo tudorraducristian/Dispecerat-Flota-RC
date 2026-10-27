@@ -9,7 +9,7 @@ sistemul.
 
 | Fișier | Ce conține |
 |---|---|
-| `2026-10-08-flota-rc-design.md` | spec-ul: deciziile D1–D53, arhitectura, mesajele, proxy-ul, serverul, UI-ul, fazele, testele și, în §16, faza 6 |
+| `2026-10-08-flota-rc-design.md` | spec-ul: deciziile D1–D54, arhitectura, mesajele, proxy-ul, serverul, UI-ul, fazele, testele și, în §16, faza 6 |
 | `2026-10-27-flota-rc-redesign-ui-design.md` | designul redesign-ului UI-ului, D35–D53: fundația vizuală, fiecare ecran și, în §10, telefonul |
 | `planuri\2026-10-08-flota-rc-faza-0-1.md` | fazele 0 și 1: pregătirea și mașinile care vorbesc, în 13 task-uri |
 | `planuri\2026-10-08-flota-rc-faza-2.md` | faza 2: serverul și harta, în 11 task-uri |

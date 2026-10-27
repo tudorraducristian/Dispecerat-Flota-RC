@@ -44,6 +44,8 @@ public final class Motor {
     private boolean spreBaza = false;
     private boolean laBaza = false;
     private double panaLaBaza;
+    /** +1 înainte pe tură, -1 înapoi; spre bază, mașina merge pe drumul mai scurt (D54). */
+    private int sensSpreBaza;
 
     public Motor(DefinitieMasina def, Viteza viteza, Temperatura temperatura, Clock ceas,
                  Buffer coada, BooleanSupplier conectat, double secundePeTick) {
@@ -75,7 +77,7 @@ public final class Motor {
                 v = 0;
                 System.out.printf("[%s] a ajuns la bază%n", id);
             } else {
-                distanta = panaLaBaza;
+                distanta = traseu.normalizeaza(distanta + sensSpreBaza * pas);
             }
         } else if (!laBaza) {
             distanta = traseu.normalizeaza(distanta + pas);
@@ -108,13 +110,19 @@ public final class Motor {
         }
     }
 
-    /** INTOARCE_LA_BAZA (spec §4.2): înapoi pe traseu, cu distanța care scade până la primul punct (D26). */
+    /**
+     * INTOARCE_LA_BAZA (spec §4.2): baza e primul punct al turei (D26). Tura pleacă din bază și se întoarce în ea,
+     * deci mașina alege drumul mai scurt, înapoi pe unde a venit sau înainte, pe restul turei (D54).
+     */
     private void intoarceLaBaza() {
         if (laBaza) {
             return;
         }
         spreBaza = true;
-        panaLaBaza = distanta;
+        double inapoi = distanta;
+        double inainte = traseu.lungime() - distanta;
+        sensSpreBaza = inainte < inapoi ? 1 : -1;
+        panaLaBaza = Math.min(inainte, inapoi);
     }
 
     /** Scade cu 1% pe minut, de la 100 la 5, apoi rămâne la 5. */

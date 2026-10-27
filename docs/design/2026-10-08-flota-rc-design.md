@@ -104,6 +104,7 @@ iar dispeceratul arată live, pe hartă, cum supraviețuiește sistemul.
 | D51 | **Pagina are manifest, iconiță și `theme-color`,** ca să se poată pune pe ecranul principal; se deschide tot ca filă de Chrome. Adăugată pe 27 octombrie | HTTPS sau `chrome://flags`, ca să se deschidă fără bara browserului |
 | D52 | **Coloana din dreapta a Hărții, lista și panoul mașinii, e bleumarin,** cu text deschis, ca meniul; la fel foaia de pe telefon. Schimbă D36 și D40 pe Hartă. Hotărâtă de Tudor pe 27 octombrie, la verificarea din execuție | coloana albă din machete |
 | D53 | **Pe telefon apare o singură alertă odată;** pe laptop rămân cel mult trei (D38). Hotărâtă de Tudor pe 27 octombrie, la verificarea din execuție: trei alerte umpleau ecranul | trei alerte și pe telefon |
+| D54 | **Trei baze și zece ture pe străzile Clujului.** Bazele sînt în Mănăștur (mașinile 1–3), Mărăști (4–6) și Bună Ziua (7–10). Fiecare mașină are tura ei, care pleacă din bază, trece prin oraș și se întoarce; două ture ies puțin din oraș, spre Florești și spre aeroport, ca alarma „a ieșit din zonă” să apară rar. Drumul pe străzi îl dă OSRM, pe datele OpenStreetMap, prin `unelte\trasee.mjs`, rulat o singură dată; simulatorul citește doar `date\trasee.json`. Zona devine „Cluj-Napoca”, la 50 km/h. La `INTOARCE_LA_BAZA`, mașina ia drumul mai scurt, înainte sau înapoi pe tura ei. Pe hartă, bazele sînt pătrate roșii cu o casă, cu numele la hover sau la atingere; locul lor stă într-un singur fișier, `web\src\baze.js`, citit și de hartă, și de script. Înlocuiește buclele provizorii și restanța ca Tudor să deseneze traseele în geojson.io (D18). Cerută de Tudor pe 27 octombrie: mașinile se învârteau în cerc; bazele și traseele le-a ales Claude | traseele desenate de mână în geojson.io; drumul cel mai scurt pe străzi spre bază, de oriunde, care ar cere o hartă a străzilor în simulator |
 
 ## 3 · Arhitectura
 
@@ -214,7 +215,7 @@ o oprire curată, mașina publică singură `offline` înainte să se deconectez
 | Tip | Parametri | Ce face mașina |
 |---|---|---|
 | `LIMITEAZA_VITEZA` | `kmh`, între 10 și 130 | nu mai depășește viteza dată |
-| `INTOARCE_LA_BAZA` | nimic | se întoarce pe traseu până la primul punct, apoi stă pe loc, cu viteza 0, și raportează în continuare |
+| `INTOARCE_LA_BAZA` | nimic | merge pe traseu până la primul punct, baza, pe drumul mai scurt, înainte sau înapoi (D54), apoi stă pe loc, cu viteza 0, și raportează în continuare |
 | `MESAJ_SOFER` | `text`, cel mult 200 de caractere | îl scrie în consola simulatorului |
 
 **Confirmarea:**
@@ -273,8 +274,10 @@ mașină reală.
 
 - **Traseele** stau în `date\trasee.json`, un `FeatureCollection` GeoJSON cu câte
   un `LineString` pe traseu și `properties.id` pentru fiecare (D18). Fiecare
-  traseu e o buclă: după ultimul punct, mașina merge înapoi la primul. Zece
-  mașini merg pe 3–5 trasee, pornite din puncte diferite.
+  traseu e o buclă: după ultimul punct, mașina merge înapoi la primul. Din 27
+  octombrie (D54), fiecare mașină are tura ei, pe străzile Clujului: pleacă din
+  una dintre cele trei baze, trece prin oraș și se întoarce în bază. Turele le
+  face `unelte\trasee.mjs`, prin OSRM, iar zona e tot orașul, „Cluj-Napoca”.
 - **Viteza** se apropie de o viteză-țintă, aleasă la întâmplare la vreo 30 de
   secunde, între 30 și 70 km/h. Rar, ținta sare la 90, ca regula de viteză să
   aibă ce prinde. `LIMITEAZA_VITEZA` taie ținta.

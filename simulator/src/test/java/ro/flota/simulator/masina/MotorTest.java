@@ -159,6 +159,27 @@ class MotorTest {
     }
 
     @Test
+    void intoarcereaMergeInaintePeDrumulMaiScurt() {
+        // 339 m din 377: până la bază sînt 38 m înainte, pe latura de jos, și 339 m înapoi, prin est și nord.
+        Motor motor = motor(0.9, spre50(), normala(85), true);
+        motor.tick();
+        motor.primesteComanda(comanda("{\"id\": 1, \"tip\": \"INTOARCE_LA_BAZA\", \"parametri\": {}}"));
+        for (int i = 0; i < 60; i++) {
+            motor.tick();
+        }
+        var pozitii = coada.continut().stream()
+                .filter(m -> m.tip() == TipMesaj.TELEMETRIE)
+                .map(MotorTest::json)
+                .toList();
+        for (JsonNode p : pozitii) {
+            assertEquals(46.0, p.get("lat").asDouble(), 1e-9, "a urcat pe latura de est, deci a mers înapoi");
+        }
+        JsonNode ultima = pozitii.getLast();
+        assertEquals(23.0, ultima.get("lon").asDouble(), 1e-9);
+        assertEquals(0.0, ultima.get("viteza").asDouble(), 1e-9);
+    }
+
+    @Test
     void sosireaLaBazaNuEsteFranareBrusca() {
         Motor motor = motor(0.1, spre50(), normala(85), true);
         motor.tick();

@@ -4,6 +4,7 @@
 
 <script>
 import L from 'leaflet'
+import { BAZE, SVG_BAZA } from '../baze.js'
 import { flota } from '../live.js'
 import { segmente } from '../traseu.js'
 import { directie } from '../directie.js'
@@ -47,6 +48,7 @@ export default {
       for (const marker of Object.values(this.markere)) marker.remove()
       this.markere = {}
       this.deseneazaMasini()
+      this.deseneazaBaze()
       this.aseazaAtribuirea()
       // Coloana din dreapta apare sau dispare, deci harta își schimbă lățimea.
       this.$nextTick(() => this.harta.invalidateSize())
@@ -70,6 +72,8 @@ export default {
     }).addTo(this.harta)
     this.stratZone = L.layerGroup().addTo(this.harta)
     this.deseneazaZone()
+    this.stratBaze = L.layerGroup().addTo(this.harta)
+    this.deseneazaBaze()
     this.stratTraseu = L.layerGroup().addTo(this.harta)
     this.markere = {}
     // Locul de unde s-a calculat ultima direcție și direcția, pe mașină. Tot în afara lui data().
@@ -176,6 +180,26 @@ export default {
         this.harta.fitBounds(L.featureGroup(poligoane).getBounds(), { padding: [20, 20] })
       }
     },
+    /**
+     * Cele trei baze (D54), ca pătrate roșii cu o casă, sub mașini: o mașină oprită la bază rămâne deasupra.
+     * Numele apare la hover pe laptop și la atingere pe telefon, unde pătratul are zona de atingere întreagă.
+     */
+    deseneazaBaze() {
+      this.stratBaze.clearLayers()
+      const latura = this.mobil ? 44 : 28
+      for (const b of BAZE) {
+        const icon = L.divIcon({
+          className: 'marker-baza',
+          html: `<div class="baza">${SVG_BAZA}</div>`,
+          iconSize: [latura, latura],
+          iconAnchor: [latura / 2, latura / 2],
+        })
+        // Leaflet deschide tooltip-ul și la click, deci atingerea de pe telefon îl arată fără cod în plus.
+        L.marker(b.loc, { icon, keyboard: false, zIndexOffset: -1000 })
+          .bindTooltip(`Baza ${b.nume} · mașinile ${b.masini}`, { direction: 'top', offset: [0, -14] })
+          .addTo(this.stratBaze)
+      }
+    },
     /** Linie plină pentru live, punctată pentru ce s-a recuperat din buffer, nimic unde lipsesc mesaje. */
     deseneazaTraseu() {
       this.stratTraseu.clearLayers()
@@ -224,6 +248,26 @@ export default {
   border: 2.5px solid var(--primar);
   border-radius: 50%;
   background: color-mix(in srgb, var(--primar) 12%, transparent);
+}
+:global(.marker-baza) {
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+}
+:global(.marker-baza .baza) {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--suprafata);
+  border-radius: var(--colt-control);
+  background: var(--rosu);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.35);
+}
+:global(.marker-baza .baza svg) {
+  width: 16px;
+  height: 16px;
 }
 @media (prefers-reduced-motion: reduce) {
   :global(.marker-masina .masina) {

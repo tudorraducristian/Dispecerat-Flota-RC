@@ -226,6 +226,21 @@ telefonul la laptop scrie la „De pe telefon”.
   măsurătorile.
 - `docs\scenariu-prezentare.md`: prezentarea, în 5 minute.
 
+## Traseele
+
+Cele zece mașini pleacă din trei baze: Mănăștur (mașinile 1–3), Mărăști (4–6)
+și Bună Ziua (7–10). Fiecare are tura ei pe străzile Clujului, în
+`date\trasee.json`. Bazele și locurile prin care trece fiecare tură stau în
+`unelte\trasee.mjs`. După o schimbare acolo, fișierul se face din nou, cu
+internet, fiindcă drumul pe străzi îl dă OSRM:
+
+```powershell
+node unelte\trasee.mjs
+```
+
+Simulatorul citește doar `date\trasee.json`, deci la prezentare nu are nevoie de
+internet pentru trasee.
+
 ## Testele
 
 ```powershell

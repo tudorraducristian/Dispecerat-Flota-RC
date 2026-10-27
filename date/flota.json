@@ -1,14 +1,14 @@
 {
   "masini": [
-    {"id": "masina-1", "traseu": "t1", "start": 0.0, "zona": "z1"},
-    {"id": "masina-2", "traseu": "t1", "start": 0.33, "zona": "z1"},
-    {"id": "masina-3", "traseu": "t1", "start": 0.66, "zona": "z1"},
-    {"id": "masina-4", "traseu": "t2", "start": 0.0, "zona": "z1"},
-    {"id": "masina-5", "traseu": "t2", "start": 0.25, "zona": "z1"},
-    {"id": "masina-6", "traseu": "t2", "start": 0.5, "zona": "z1"},
-    {"id": "masina-7", "traseu": "t2", "start": 0.75, "zona": "z1"},
-    {"id": "masina-8", "traseu": "t3", "start": 0.0, "zona": "z1"},
-    {"id": "masina-9", "traseu": "t3", "start": 0.33, "zona": "z1"},
-    {"id": "masina-10", "traseu": "t3", "start": 0.66, "zona": "z1"}
+    {"id": "masina-1", "traseu": "t1", "start": 0.15, "zona": "z1"},
+    {"id": "masina-2", "traseu": "t2", "start": 0.5, "zona": "z1"},
+    {"id": "masina-3", "traseu": "t3", "start": 0.8, "zona": "z1"},
+    {"id": "masina-4", "traseu": "t4", "start": 0.3, "zona": "z1"},
+    {"id": "masina-5", "traseu": "t5", "start": 0.6, "zona": "z1"},
+    {"id": "masina-6", "traseu": "t6", "start": 0.05, "zona": "z1"},
+    {"id": "masina-7", "traseu": "t7", "start": 0.4, "zona": "z1"},
+    {"id": "masina-8", "traseu": "t8", "start": 0.7, "zona": "z1"},
+    {"id": "masina-9", "traseu": "t9", "start": 0.2, "zona": "z1"},
+    {"id": "masina-10", "traseu": "t10", "start": 0.9, "zona": "z1"}
   ]
 }
