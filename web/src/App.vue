@@ -43,9 +43,13 @@ export default {
   data() {
     return {
       sesiune,
-      meniu: this.$vuetify.display.mobile ? false : meniulDeLaptop(),
+      meniu: false,
       alerte: [],
     }
+  },
+  // $vuetify e un computed pus de Vuetify printr-un mixin, deci nu există încă în data(); aici există.
+  created() {
+    this.meniu = this.$vuetify.display.mobile ? false : meniulDeLaptop()
   },
   watch: {
     /** Canalul live, vremea și cifra de alarme merg doar cu token: pornesc la login și se opresc la ieșire. */
