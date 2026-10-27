@@ -33,6 +33,9 @@ export default {
     conectat() {
       return flota.conectat
     },
+    idMasini() {
+      return Object.keys(flota.masini).join(',')
+    },
   },
   watch: {
     /** Când revine legătura cu serverul, se ia din nou ce n-a mers cât a lipsit (registrul fazei 2). */
@@ -41,6 +44,10 @@ export default {
       if (!this.zone.length) this.incarcaZone()
       if (this.selectata && !this.istoric && this.eroareTraseu) this.alege(this.selectata)
     },
+    // /?masina=<id> vine din „Vezi pe hartă” sau e scrisă de mână (redesign §4.4).
+    '$route.query.masina': { immediate: true, handler: 'dinAdresa' },
+    // La F5, lista mașinilor vine după montare, deci adresa se citește din nou când apare.
+    idMasini: 'dinAdresa',
   },
   mounted() {
     this.opresteAscultarea = asculta((tip, date) => {
@@ -62,8 +69,16 @@ export default {
         console.warn('nu pot încărca zonele:', e.message)
       }
     },
+    /** Un id pe care flota nu-l are, de exemplu masina-99, e ignorat: rămâne lista. */
+    dinAdresa() {
+      const id = this.$route.query.masina
+      if (id && flota.masini[id] && this.selectata !== id) this.alege(id)
+    },
     /** Ultimele traseuMinute minute din REST, după setări, apoi traseul crește din canalul live. */
     async alege(id) {
+      // Adresa urmează mașina aleasă, ca un „Vezi pe hartă” spre aceeași mașină să mai facă ceva și ca F5 să n-o redeschidă pe cea închisă.
+      const dinUrl = this.$route.query.masina
+      if (dinUrl && dinUrl !== id) this.$router.replace({ path: '/', query: id ? { masina: id } : {} })
       this.selectata = id
       this.istoric = false
       this.eroareTraseu = null

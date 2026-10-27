@@ -9,14 +9,10 @@
       <MeniuLateral :deschis="meniu" @inchide="meniu = false" @iesire="iesire" />
       <v-main>
         <router-view />
+        <!-- În v-main, ca stiva să știe de la Vuetify unde sînt bara și meniul. -->
+        <StivaAlerte :alerte="alerte" :dreapta="$route.path === '/' ? 340 : 0" @scoate="scoateAlerta" />
       </v-main>
     </template>
-    <v-snackbar v-model="notificare.vizibila" :timeout="6000" color="warning" location="top right">
-      <strong>{{ notificare.masina }}</strong>: {{ notificare.tip }}<br />{{ notificare.detalii }}
-      <template #actions>
-        <v-btn variant="text" to="/alarme" @click="notificare.vizibila = false">Vezi</v-btn>
-      </template>
-    </v-snackbar>
   </v-app>
 </template>
 
@@ -25,8 +21,10 @@ import { api } from './api.js'
 import { asculta, pornesteLive, opresteLive, pornesteVremea, opresteVremea } from './live.js'
 import { sesiune, uita, asiguraUtilizatorul } from './sesiune.js'
 import { pornesteNumararea, opresteNumararea } from './numarAlarme.js'
+import { inStiva } from './alerte.js'
 import BaraSus from './components/BaraSus.vue'
 import MeniuLateral from './components/MeniuLateral.vue'
+import StivaAlerte from './components/StivaAlerte.vue'
 
 /** Starea meniului de laptop rămâne după F5 (redesign §4.3); pe telefon sertarul pornește mereu închis. */
 const CHEIE_MENIU = 'flota.meniu'
@@ -41,12 +39,12 @@ function meniulDeLaptop() {
 
 export default {
   name: 'App',
-  components: { BaraSus, MeniuLateral },
+  components: { BaraSus, MeniuLateral, StivaAlerte },
   data() {
     return {
       sesiune,
       meniu: this.$vuetify.display.mobile ? false : meniulDeLaptop(),
-      notificare: { vizibila: false, masina: '', tip: '', detalii: '' },
+      alerte: [],
     }
   },
   watch: {
@@ -72,14 +70,15 @@ export default {
     },
   },
   mounted() {
-    // Alarmele noi apar ca notificare pe orice pagină (spec §7).
+    // Alarmele noi apar ca alertă pe orice pagină (spec §7).
     asculta((tip, date) => {
-      if (tip === 'ALARMA') {
-        this.notificare = { vizibila: true, masina: date.masinaId, tip: date.tip, detalii: date.detalii }
-      }
+      if (tip === 'ALARMA') this.alerte = inStiva(this.alerte, date)
     })
   },
   methods: {
+    scoateAlerta(id) {
+      this.alerte = this.alerte.filter((a) => a.id !== id)
+    },
     comutaMeniul() {
       this.meniu = !this.meniu
       if (this.$vuetify.display.mobile) return
