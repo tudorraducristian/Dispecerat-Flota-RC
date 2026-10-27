@@ -1,0 +1,91 @@
+/* Token-urile stilului „A” (redesign §4.1). Componentele iau culorile doar de aici, nu ca hex scris de mână. */
+:root {
+  /* fonduri */
+  --bleumarin: #0F172A;
+  --bleumarin-2: #1E293B;
+  --fond: #F8FAFC;
+  --suprafata: #FFFFFF;
+  --margine: #E2E8F0;
+
+  /* text și primar */
+  --text: #0F172A;
+  --text-2: #64748B;
+  --text-3: #94A3B8;
+  --primar: #2563EB;
+  --primar-text: #1D4ED8;
+  --primar-slab: #EFF6FF;
+
+  /* stări */
+  --verde: #16A34A;
+  --verde-slab: #DCFCE7;
+  --verde-text: #166534;
+  --portocaliu: #EA580C;
+  --gri-offline: #94A3B8;
+  --rosu: #DC2626;
+  --rosu-slab: #FEE2E2;
+  --rosu-text: #B91C1C;
+  --ambra: #D97706;
+  --ambra-slab: #FEF3C7;
+  --ambra-text: #B45309;
+  --live: #22C55E;
+  --live-text: #4ADE80;
+
+  /* fonturi, locale, din @fontsource */
+  --font: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* colțuri și umbră; umbra e doar pentru ce plutește: alerta și dialogurile */
+  --colt-control: 8px;
+  --colt-card: 12px;
+  --umbra-plutitor: 0 10px 30px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+
+  /* telefon (redesign §10.1) */
+  --atingere: 44px;
+  --bara-telefon: 52px;
+
+  /* Vuetify 4 își ia fontul din variabilele astea, cu Roboto în lipsa lor. */
+  --v-font-body: var(--font);
+  --v-font-heading: var(--font);
+}
+
+html,
+body {
+  background: var(--fond);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+.v-application,
+.v-application [class*='text-'] {
+  font-family: var(--font) !important;
+}
+
+.cifre {
+  font-variant-numeric: tabular-nums;
+}
+
+.eticheta-mica {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+
+.titlu-pagina {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Sub 16 px, Chrome pe telefon mărește pagina la atingerea câmpului. Același prag ca Vuetify (main.js). */
+@media (max-width: 999px) {
+  input,
+  textarea,
+  select,
+  .v-field__input {
+    font-size: 16px !important;
+  }
+}
