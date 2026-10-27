@@ -65,6 +65,19 @@ body {
   font-family: var(--font) !important;
 }
 
+/*
+ * Butoanele scrise de mână pornesc fără stilul browserului. Doar cele fără clase Vuetify: stilurile Vuetify stau
+ * într-un @layer, iar o regulă din afara lui le-ar bate pe toate, oricât de specifice ar fi.
+ */
+button:not([class*='v-']) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
 .cifre {
   font-variant-numeric: tabular-nums;
 }

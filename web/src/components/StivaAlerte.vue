@@ -91,7 +91,8 @@ export default {
 <style scoped>
 .stiva {
   position: fixed;
-  z-index: 1010;
+  /* Peste controalele Leaflet (1000), sub fundalul sertarului de pe telefon (1003) și sub dialoguri. */
+  z-index: 1002;
   top: calc(var(--v-layout-top, 56px) + 12px);
   left: var(--v-layout-left, 0px);
   right: calc(var(--v-layout-right, 0px) + var(--dreapta));

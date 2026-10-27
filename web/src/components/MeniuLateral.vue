@@ -313,6 +313,11 @@ nav {
   color: var(--pe-bleumarin-text);
   cursor: pointer;
 }
+/* Fundalul de sub sertar: Vuetify îl face negru la 0,2, prea slab pe o pagină albă; macheta are bleumarin la 55%. */
+:global(.v-navigation-drawer__scrim) {
+  background: var(--bleumarin);
+  opacity: 0.55;
+}
 /* Pe telefon, fiecare rând se apasă cu degetul: cel puțin 44 px. */
 @media (max-width: 999px) {
   .element {
