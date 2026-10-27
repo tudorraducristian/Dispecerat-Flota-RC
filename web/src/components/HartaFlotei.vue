@@ -47,6 +47,9 @@ export default {
       for (const marker of Object.values(this.markere)) marker.remove()
       this.markere = {}
       this.deseneazaMasini()
+      this.aseazaAtribuirea()
+      // Coloana din dreapta apare sau dispare, deci harta își schimbă lățimea.
+      this.$nextTick(() => this.harta.invalidateSize())
     },
     zone() {
       this.deseneazaZone()
@@ -73,11 +76,30 @@ export default {
     this.ultimulLoc = {}
     this.directii = {}
     this.deseneazaMasini()
+    this.aseazaAtribuirea()
   },
   beforeUnmount() {
     this.harta.remove()
   },
   methods: {
+    /**
+     * Aduce mașina în partea de hartă care se vede deasupra unei benzi de josPx de jos, adică deasupra foii de
+     * pe telefon. O mașină fără poziție e ignorată.
+     */
+    adu(id, josPx) {
+      const p = flota.masini[id]?.pozitie
+      if (!p) return
+      this.harta.panInside([p.lat, p.lon], { paddingTopLeft: [16, 16], paddingBottomRight: [16, josPx + 16] })
+    },
+    /**
+     * Pe telefon, jos stă foaia: atribuirea OpenStreetMap urcă sus, ca să se vadă mereu. Butoanele de zoom
+     * dispar, fiindcă zoom-ul se face cu două degete (redesign §10.4), iar sus le-ar acoperi alerta.
+     */
+    aseazaAtribuirea() {
+      this.harta.attributionControl.setPosition(this.mobil ? 'topright' : 'bottomright')
+      if (this.mobil) this.harta.zoomControl.remove()
+      else this.harta.zoomControl.addTo(this.harta)
+    },
     deseneazaMasini() {
       for (const m of Object.values(flota.masini)) {
         if (!m.pozitie) continue
