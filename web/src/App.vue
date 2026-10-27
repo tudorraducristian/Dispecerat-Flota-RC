@@ -71,13 +71,20 @@ export default {
     /** Peste prag, în orice sens, meniul ia starea potrivită: închis pe telefon, cea ținută minte pe laptop. */
     '$vuetify.display.mobile'(mobil) {
       this.meniu = mobil ? false : meniulDeLaptop()
+      this.alerte = this.alerte.slice(0, this.maxAlerte)
     },
   },
   mounted() {
     // Alarmele noi apar ca alertă pe orice pagină (spec §7).
     asculta((tip, date) => {
-      if (tip === 'ALARMA') this.alerte = inStiva(this.alerte, date)
+      if (tip === 'ALARMA') this.alerte = inStiva(this.alerte, date, this.maxAlerte)
     })
+  },
+  computed: {
+    /** Pe telefon, una singură: trei alerte umplu ecranul (cerut de Tudor, D53). Pe laptop, cel mult trei. */
+    maxAlerte() {
+      return this.$vuetify.display.mobile ? 1 : 3
+    },
   },
   methods: {
     scoateAlerta(id) {

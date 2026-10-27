@@ -9,6 +9,11 @@ test('cel mult 3, cea mai nouă prima', () => {
   for (const id of [1, 2, 3, 4]) s = inStiva(s, { id })
   assert.deepEqual(s.map((a) => a.id), [4, 3, 2])
 })
+test('pe telefon, cu max 1, rămâne doar cea mai nouă', () => {
+  let s = []
+  for (const id of [1, 2, 3]) s = inStiva(s, { id }, 1)
+  assert.deepEqual(s.map((a) => a.id), [3])
+})
 test('aceeași alarmă nu intră de două ori', () => {
   const s = inStiva(inStiva([], { id: 7 }), { id: 7 })
   assert.equal(s.length, 1)
