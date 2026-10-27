@@ -81,6 +81,35 @@ Fiecare pas e într-un terminal separat, din folderul ăsta.
 Se opresc cu Ctrl+C. La „Terminate batch job (Y/N)?” răspunzi Y. Scenariul
 complet de test e în `docs\scenariu-test.md`.
 
+## De pe telefon
+
+Telefonul deschide UI-ul de pe laptop, prin Vite. Serverul rămâne pe
+`127.0.0.1`: la el ajunge doar Vite, de pe același laptop.
+
+1. **Laptopul se leagă la hotspot-ul telefonului.** Telefonul are date mobile,
+   așa că se încarcă și fundalul hărții.
+2. **UI-ul pornește cu `npm run telefon`,** în loc de pasul 4, W, de mai sus:
+
+   ```powershell
+   cd web; npm run telefon
+   ```
+
+   `npm run dev` rămâne doar pe laptop. Pe o rețea străină, de exemplu Wi-Fi-ul
+   facultății, laptopul nu se deschide spre rețea decât cât merge
+   `npm run telefon`.
+3. **Adresa pentru telefon** e cea de pe rândul `Network` afișat de Vite, de
+   exemplu `http://192.168.137.1:5173`.
+4. **Prima dată, Windows întreabă dacă lasă Node.js în rețea:** da, pentru
+   rețele private.
+5. **Dacă rețeaua hotspot-ului apare în Windows ca publică,** firewall-ul
+   blochează telefonul. Profilul ei trece pe „Privată”, din Setări → Rețea și
+   internet → Wi-Fi → numele rețelei.
+6. **Pe telefon,** în Chrome, deschizi adresa și intri în cont. Opțional, din
+   meniul Chrome, „Adaugă pe ecranul de pornire”.
+
+Cât merge `npm run telefon`, oricine e în aceeași rețea poate vedea codul
+UI-ului servit de Vite. Datele cer login.
+
 ## Primul login
 
 La prima pornire, dacă nu există niciun administrator, S face contul `admin` și
