@@ -304,7 +304,7 @@ h2 {
   cursor: pointer;
 }
 .mobil .fila {
-  min-height: 40px;
+  min-height: var(--atingere);
 }
 .fila.activa {
   background: var(--pe-bleumarin-linie);

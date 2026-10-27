@@ -142,6 +142,10 @@ export default {
 .sus :deep(.v-input) {
   flex: none;
 }
+/* density compact dă 40 px; pe telefon, „Pentru” are zona de atingere întreagă. */
+.mobil :deep(.v-field__input) {
+  min-height: var(--atingere);
+}
 .titlu {
   margin: 0;
   font-size: 15px;

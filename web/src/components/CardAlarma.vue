@@ -7,15 +7,16 @@
       <div v-if="mobil" class="ora-sus cifre">{{ ora(alarma.ora) }} · {{ timpScurs(alarma.ora, acum) }}</div>
       <div class="titlu">{{ propozitieAlarma(alarma) }}</div>
       <div class="detalii">{{ virgula(alarma.detalii) }} · {{ sursaAlarmei(alarma.sursa) }}</div>
-      <button v-if="mobil && !alarma.vazuta" type="button" class="vezi" @click="vezi">Vezi pe hartă</button>
+      <button v-if="mobil" type="button" class="vezi" @click="vezi">Vezi pe hartă</button>
     </div>
 
     <div v-if="!mobil" class="ora-dreapta cifre">
       {{ ora(alarma.ora) }}<br>{{ timpScurs(alarma.ora, acum) }}
     </div>
-    <div v-if="!alarma.vazuta" class="actiuni">
+    <!-- O alarmă văzută pierde doar bifa; „Vezi pe hartă” rămâne (redesign §4.7). -->
+    <div v-if="!mobil || !alarma.vazuta" class="actiuni">
       <button v-if="!mobil" type="button" class="vezi" @click="vezi">Vezi pe hartă</button>
-      <button type="button" class="bifa" aria-label="Am văzut" title="Am văzut" @click="$emit('vazuta', alarma)">
+      <button v-if="!alarma.vazuta" type="button" class="bifa" aria-label="Am văzut" title="Am văzut" @click="$emit('vazuta', alarma)">
         <Check :size="mobil ? 18 : 15" :stroke-width="2.2" />
       </button>
     </div>

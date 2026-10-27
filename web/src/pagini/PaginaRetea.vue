@@ -262,7 +262,7 @@ tr:last-child td {
 }
 .fila {
   flex: 1;
-  min-height: 40px;
+  min-height: var(--atingere);
   border-radius: var(--colt-control);
   color: var(--text-2);
   font-size: 14px;

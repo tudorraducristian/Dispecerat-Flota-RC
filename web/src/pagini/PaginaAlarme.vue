@@ -138,13 +138,17 @@ export default {
     clearInterval(this.ceas)
   },
   methods: {
+    /** Două filtre alese repede pleacă în două cereri; răspunsul care vine ultimul nu e mereu al filtrului ales. */
     async incarca() {
+      const cerere = (this.cerere = (this.cerere ?? 0) + 1)
       try {
-        this.alarme = await api.alarme(FILTRE[this.filtru], this.tip)
+        const alarme = await api.alarme(FILTRE[this.filtru], this.tip)
+        if (cerere !== this.cerere) return
+        this.alarme = alarme
         this.acum = Date.now()
         this.eroare = null
       } catch (e) {
-        this.eroare = e.message
+        if (cerere === this.cerere) this.eroare = e.message
       }
     },
     alegeFiltru(filtru) {
@@ -333,7 +337,7 @@ button:focus-visible {
 }
 .segment.lat button {
   flex: 1;
-  min-height: 40px;
+  min-height: var(--atingere);
   padding: 0;
 }
 .telefon .segment .numar {
