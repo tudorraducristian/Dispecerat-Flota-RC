@@ -80,11 +80,30 @@ iar dispeceratul arată live, pe hartă, cum supraviețuiește sistemul.
 | D27 | **Repo-ul are remote pe GitHub: `tudorraducristian/ProiectRC`, privat.** Creat pe 8 octombrie, la cererea lui Tudor. În `docs\design\` stau copii ale spec-ului, ale planurilor și ale rezumatului de sesiune. Originalele rămân în AIS-OS, iar o schimbare se face întâi acolo, apoi se copiază. După commit-urile unui task urmează `git push` | doar git local, fără nicio copie în afara laptopului |
 | D28 | **Login cu două roluri, `ADMIN` și `DISPECER`,** după tiparul de la SCD: parolă cu BCrypt, token aleator ținut în bază, interceptor pe `/api/**` și token în `/ws?token=`. Primul `admin` îl face serverul, cu o parolă aleatoare scrisă o dată în log. Adăugată pe 19 octombrie (§16.2) | conturi și pentru mașini, la Mosquitto, cu listă de drepturi pe topic-uri: subiect de rețele, dar muncă în plus, respinsă de Tudor; Spring Security întreg, care ascunde exact mecanismul |
 | D29 | **Setările stau în tabelul `setari`:** pragul pentru `OFFLINE_PRELUNGIT` și intervalul implicit al traseului. Le schimbă doar `ADMIN`. Adăugată pe 19 octombrie (§16.3) | limitele de viteză ale zonelor, care se încarcă din `zone.json` la fiecare pornire (D13) și s-ar suprascrie |
-| D30 | **Meniul e un sertar lateral,** cu Harta, Rețea, Alarme, Setări și, doar pentru `ADMIN`, Conturi. Numele, rolul și „Ieșire” stau în bara de sus. Adăugată pe 19 octombrie (§16.4) | un meniu doar în bara de sus, înghesuit lângă chip-ul live |
+| D30 | **Meniul e un sertar lateral,** cu Harta, Rețea, Alarme, Setări și, doar pentru `ADMIN`, Conturi. Numele, rolul și „Ieșire” stau în bara de sus. Adăugată pe 19 octombrie (§16.4). **Înlocuită pe laptop de D37, pe 27 octombrie; pe telefon, sertarul revine prin D47** | un meniu doar în bara de sus, înghesuit lângă chip-ul live |
 | D31 | **Articolul științific îl scrie Claude în întregime,** în engleză, pe template-ul IEEE dat de profesor. Nu se publică. Adăugată pe 19 octombrie, la cererea lui Tudor (§16.5) | Tudor scrie, iar Claude revizuiește; textul în română, deși template-ul și numele materiei sînt și în engleză |
 | D32 | **PowerPoint-ul și manualul sînt în română,** ca fișiere `.pptx` și `.docx`. PowerPoint-ul se face din articol, ca în nota *** a grilei. Adăugată pe 19 octombrie (§16.6, §16.7) | o prezentare în browser, pe care grila n-o numește |
 | D33 | **Faza 6 vine după faza 5,** iar repetiția prezentării se mută din faza 5 în ea, fiindcă are nevoie de PowerPoint. Login-ul e primul în fază, iar manualul vine după ce UI-ul e final. Adăugată pe 19 octombrie (§16.8) | login-ul înaintea fazei 3, care ar fi întârziat partea de rețele, miezul notei |
 | D34 | **Detaliile fazei 6, hotărâte la scrierea planului:** numele de cont se normalizează (`trim`, litere mici); parola are 8 caractere – 72 de octeți UTF-8, limita BCrypt; adminul nu-și resetează parola din Conturi, ci din Setări; token-urile expirate se caută o dată pe minut, iar canalele lor se închid cu codul 4001; metodele de admin poartă `@DoarAdmin`; token-ul stă în `localStorage['flota.token']`; documentele se fac cu Word și PowerPoint prin COM, din Markdown, iar figurile din SVG, cu Edge; template-ul se mută în `docs\articol\model\`; tunelul și găurile se măsoară de câte 3 ori; la repetiție, demonstrația ține sub 5 minute, iar totul sub 8. Adăugată pe 19 octombrie, odată cu planul fazei 6 | parola ca text liber de orice lungime, care la BCrypt ar da 500; resetarea propriei parole din Conturi, care l-ar scoate pe admin din aplicație |
+| D35 | **Redesign-ul UI-ului are o singură fundație vizuală:** bleumarin, alb și albastru, fontul Inter instalat local, iconițe Lucide, o singură temă deschisă la culoare și textele pentru oameni („Mașina 3”, „Viteză peste limită”, „Administrator”). Adăugată pe 27 octombrie; detaliile, în `2026-10-27-flota-rc-redesign-ui-design.md` | Vuetify din cutie, cu tema luată din browser, care ieșea pe jumătate neagră |
+| D36 | **Bara de sus e bleumarin,** cu logo, „Dispecerat flotă” și „Cluj-Napoca · N mașini”, LIVE cu majuscule și punct care pulsează, utilizatorul cu inițiala și rolul în cuvinte. Adăugată pe 27 octombrie | albastrul închis cu titlul pe bloc propriu; totul închis, ca o cameră de control |
+| D37 | **Meniul stă mereu lângă pagină,** bleumarin, cu grupurile „Operare” și „Administrare” și cifra alarmelor nevăzute; ☰ îl ascunde. Înlocuiește sertarul din D30. Adăugată pe 27 octombrie | meniul alb; doar iconițe |
+| D38 | **Alerta e un card alb sub bară,** pe mijlocul hărții sau al conținutului, cel mult 3 una sub alta, 6 secunde fiecare, cu „Vezi pe hartă”. Adăugată pe 27 octombrie | card închis; bandă lipită de bară |
+| D39 | **Mașinile apar văzute de sus, rotite după direcția de mers,** calculată în UI din ultimele două poziții. Adăugată pe 27 octombrie | cerc cu iconiță; etichetă cu număr |
+| D40 | **Panoul mașinii ia locul listei** și are filele Comenzi și Traseu, cu butoane rapide pentru traseu. Adăugată pe 27 octombrie | totul pe o coloană |
+| D41 | **Pagina Rețea are panoul de comandă în stânga,** cu patru plăci, iar în dreapta cifrele flotei, graficul, un singur tabel pe mașină și jurnalul ca un terminal. Adăugată pe 27 octombrie | bară de comenzi sus |
+| D42 | **Alarmele sînt un flux de carduri,** cu propoziții, grupe de timp, filtru după tip și „Le-am văzut pe toate”. Adăugată pe 27 octombrie | tabel aerisit |
+| D43 | **Login-ul are ecranul împărțit,** cu proiectul prezentat în stânga. Adăugată pe 27 octombrie | card pe mijloc, pe fundal bleumarin |
+| D44 | **Serverul primește trei cereri pentru alarme:** `GET /api/alarme/numar`, `POST /api/alarme/vazute` și parametrul `tip`, fiindcă lista e tăiată la 200 și UI-ul nu poate număra singur. Adăugată pe 27 octombrie | numărarea în browser, greșită peste 200 de alarme; fără cifră și fără filtru |
+| D45 | **Toată aplicația merge și pe telefon, în browser,** cu aceleași componente și un singur prag, 1000 px. Profesorul vrea comenzi date de pe telefon către laptop, iar browserul îi ajunge; închide Î10. Adăugată pe 27 octombrie; detaliile, în §10 din `2026-10-27-flota-rc-redesign-ui-design.md` | doar comenzile pe telefon; o aplicație instalată |
+| D46 | **Telefonul ajunge la laptop prin Vite:** `npm run telefon` ascultă pe toate interfețele, `npm run dev` rămâne pe `127.0.0.1`, iar Spring Boot tot pe `127.0.0.1`. WebSocket-ul acceptă în plus originile din rețelele private. Adăugată pe 27 octombrie | serverul deschis spre rețea; Vite mereu pe toate interfețele |
+| D47 | **Pe telefon, bara are ☰, titlul paginii și LIVE,** iar meniul e un sertar peste pagină, cu punctul roșu pe ☰ când există alarme nevăzute. Adăugată pe 27 octombrie | bară de file jos |
+| D48 | **Pe telefon, harta ia tot ecranul,** iar lista și panoul mașinii stau într-o foaie care urcă de jos, cu trei înălțimi. Adăugată pe 27 octombrie | panoul pe tot ecranul, peste hartă |
+| D49 | **Pe telefon, Rețea are trei file:** Comenzi, Flota și Jurnal; Comenzi încape pe un ecran. Adăugată pe 27 octombrie | totul pe o coloană lungă |
+| D50 | **Restul paginilor pe telefon:** butonul care duce acțiunea la capăt stă jos, la degetul mare, iar acțiunile rare stau departe sau după ⋮; la Alarme, ora urcă deasupra titlului. Adăugată pe 27 octombrie | aceleași așezări ca pe laptop, strânse |
+| D51 | **Pagina are manifest, iconiță și `theme-color`,** ca să se poată pune pe ecranul principal; se deschide tot ca filă de Chrome. Adăugată pe 27 octombrie | HTTPS sau `chrome://flags`, ca să se deschidă fără bara browserului |
+| D52 | **Coloana din dreapta a Hărții, lista și panoul mașinii, e bleumarin,** cu text deschis, ca meniul; la fel foaia de pe telefon. Schimbă D36 și D40 pe Hartă. Hotărâtă de Tudor pe 27 octombrie, la verificarea din execuție | coloana albă din machete |
+| D53 | **Pe telefon apare o singură alertă odată;** pe laptop rămân cel mult trei (D38). Hotărâtă de Tudor pe 27 octombrie, la verificarea din execuție: trei alerte umpleau ecranul | trei alerte și pe telefon |
 
 ## 3 · Arhitectura
 
@@ -667,7 +686,8 @@ După aprobarea spec-ului, odată cu planul:
 - **MQTT 5** (D2).
 - **Hardware real,** inclusiv o legătură cu `jetson-car-logger`. Ar fi o
   poveste bună mai târziu, dar nu e cerută.
-- **Deploy-ul** în afara laptopului și **aplicația pe telefon.**
+- **Deploy-ul** în afara laptopului și **aplicația nativă pe telefon.** Pe
+  telefon, UI-ul merge în browser (D45).
 - **Testele automate pentru UI** (§7).
 
 ## 14 · Deschise
@@ -683,7 +703,7 @@ După aprobarea spec-ului, odată cu planul:
 | Î7 | **Rândurile roșii din grilă (14–18)** și numerotarea care sare de la 5 la 7 | de întrebat la profesor |
 | Î8 | **Datele de autor pentru articol:** numele complet, facultatea, universitatea, orașul și emailul, cum le cere template-ul | înainte de Task-ul cu articolul din faza 6 |
 | Î9 | **Folosirea AI:** articolul îl scrie Claude în întregime (D31). Dacă profesorul cere o mențiune, ea intră la Acknowledgment | înainte de predarea articolului |
-| Î10 | **Sarcina 5, „Conexiune Intranet sau Internet”:** acum totul ascultă pe `127.0.0.1`, pe un singur laptop. Dacă profesorul vrea două dispozitive, UI-ul se deschide de pe telefon, prin hotspot, iar serverul și Vite ascultă și pe adresa din rețea | de întrebat la profesor |
+| Î10 | ~~Sarcina 5, „Conexiune Intranet sau Internet”~~ | **închisă pe 27 octombrie:** profesorul vrea comenzi date de pe telefon către laptop, iar browserul îi ajunge. Telefonul deschide UI-ul prin hotspot, cu `npm run telefon`; Spring Boot rămâne pe `127.0.0.1` (D45, D46) |
 
 **Verificat pe 8 octombrie, la scrierea planului,** pe Maven Central, în javadoc și
 pe mosquitto.org:

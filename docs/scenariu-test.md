@@ -97,7 +97,7 @@ Aștepți 30 de secunde.
 2. Din panoul mașinii, comanda `LIMITEAZA_VITEZA` cu 50 km/h.
 
 Se așteaptă:
-- comanda rămâne `TRIMISA`, iar UI-ul spune „așteaptă mașina”;
+- comanda rămâne `TRIMISA`, iar UI-ul spune „Așteaptă mașina”;
 - după ieșirea din tunel, devine `CONFIRMATA`;
 - viteza lui `masina-3` coboară cu cel mult 5 km/h pe secundă până la 50, deci
   2–3 secunde mai trece de 50, apoi nu mai trece.

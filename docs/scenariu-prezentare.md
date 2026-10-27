@@ -2,41 +2,50 @@
 
 După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.md`.
 
+**Scena:** harta stă pe laptop, la proiector. Comenzile de rețea le dai de pe
+telefon, din pagina Rețea, iar sala vede efectul pe laptop (redesign §10).
+
 ## Cu o zi înainte
 
 - Repetiția completă, cu cronometrul: toți cei șase pași, sub 5 minute.
 - Hotspot-ul telefonului încercat pe laptop. Harta are nevoie de internet (R3).
+- Telefonul încercat pe adresa laptopului, după „De pe telefon” din `README.md`.
 
 ## Cu 15 minute înainte
 
-1. Serviciul MySQL pornit, apoi terminalele A, P, S, W, C și O, după `README.md`.
-2. Curățenie, în D:
+1. Laptopul pe hotspot-ul telefonului.
+2. Serviciul MySQL pornit, apoi terminalele A, P, S, W, C și O, după `README.md`.
+   W pornește cu `npm run telefon`, nu cu `npm run dev`.
+3. Curățenie, în D:
 
    ```powershell
    Sql "UPDATE masini SET pierdute = 0, recuperate = 0"
    Sql "UPDATE alarme SET vazuta = TRUE"
    ```
 
-3. În browser:
-   - tabul 1: Harta, mărită pe zonă, cu `masina-3` aleasă;
+4. Pe laptop, în browser:
+   - tabul 1: Harta, mărită pe zonă, cu Mașina 3 aleasă;
    - tabul 2: Rețea.
-4. În O, `STARE`: zece rânduri `NORMAL`.
+5. Pe telefon, în Chrome: adresa de pe rândul `Network` al lui W, login, apoi
+   Rețea, fila Comenzi.
+6. În O, `STARE`: zece rânduri `NORMAL`.
 
 ## Pașii
 
 ### 1. Zece mașini live, 30 de secunde
 
-**Arăți:** harta, lista „10 din 10 online”, apoi panoul lui `masina-3`.
+**Arăți:** harta, lista „FLOTA · 10 DIN 10 ONLINE”, apoi panoul Mașinii 3.
 
 **Spui:** „Zece mașini simulate trimit telemetria prin MQTT, o dată pe secundă.
 Între ele și broker stă un proxy scris de mine, care strică rețeaua la comandă.”
 
 ### 2. Tunelul, 60 de secunde
 
-**Faci:** în O, `TUNEL masina-3 15`.
+**Faci:** pe telefon, „Pentru” Mașina 3, placa Tunel, 15 secunde, apoi
+„Pornește tunelul”. Rezerva, dacă telefonul nu merge: în O, `TUNEL masina-3 15`.
 
-**Se vede:**
-- `masina-3` devine gri pe loc;
+**Se vede, pe laptop:**
+- Mașina 3 devine gri pe loc;
 - după vreo 19 secunde e din nou verde;
 - porțiunea din tunel e punctată, iar „Recuperate” crește.
 
@@ -48,10 +57,11 @@ După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.m
 
 ### 3. Gaura neagră, 75 de secunde
 
-**Faci:** `GAURA masina-5 10`.
+**Faci:** pe telefon, „Pentru” Mașina 5, placa Gaură, 10 secunde, apoi
+„Deschide gaura”. Rezerva: în O, `GAURA masina-5 10`.
 
-**Se vede:**
-- `masina-5` rămâne verde câteva secunde, deși nu mai trece nimic: 6,6 măsurat
+**Se vede, pe laptop:**
+- Mașina 5 rămâne verde câteva secunde, deși nu mai trece nimic: 6,6 măsurat
   cu Mosquitto (5,2 cu HiveMQ CE);
 - apoi devine gri, iar la revenire pe hartă e o porțiune lipsă, urmată de una
   punctată;
@@ -70,10 +80,10 @@ După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.m
 ### 4. O comandă dată în tunel, 60 de secunde
 
 **Faci:**
-1. `TUNEL masina-3 30`;
-2. din panou, „Limitează viteza”, cu 50.
+1. pe telefon, tunel pe Mașina 3, 30 de secunde;
+2. pe laptop, în panoul Mașinii 3, fila Comenzi, „Limitează viteza”, cu 50.
 
-**Se vede:** „așteaptă mașina”, apoi, la ieșirea din tunel, „confirmată”.
+**Se vede:** „Așteaptă mașina”, apoi, la ieșirea din tunel, „Confirmată”.
 
 **Spui:**
 - sesiunea persistentă (`cleanSession false`) face ca broker-ul să păstreze
@@ -93,10 +103,11 @@ După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.m
 
 ### 6. Latența, 45 de secunde
 
-**Faci:** pe Rețea, ținta `TOATE`, întârzierea 500 și variația 200, apoi
-„Aplică întârzierea”.
+**Faci:** pe telefon, „Pentru” Toată flota, placa Întârziere, 500 ms și
+variația 200, apoi „Aplică întârzierea”.
 
-**Se vede:** graficul urcă la vreo 500 ms, iar mașinile devin portocalii.
+**Se vede, pe laptop,** în tabul Rețea: graficul urcă la vreo 500 ms; pe Hartă,
+mașinile devin portocalii.
 
 **Spui:**
 - fiecare mesaj are ora mașinii și ora sosirii, iar latența e diferența dintre
@@ -105,16 +116,17 @@ După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.m
   ceasurile s-ar sincroniza prin NTP;
 - variația nu schimbă ordinea octeților, fiindcă pe TCP ordinea e garantată.
 
-La final, „Normal”.
+La final, pe telefon, „Rețea normală pentru toată flota”.
 
 ## Dacă ceva merge prost
 
 | Ce vezi | Ce faci |
 |---|---|
 | Harta e goală, fără străzi | Hotspot-ul. Fără el, mașinile și traseele se văd pe fond gol (R3) |
-| „proxy indisponibil” pe Rețea | P nu rulează: îl pornești; mașinile revin în cel mult 30 de secunde |
+| „Proxy indisponibil” pe Rețea | P nu rulează: îl pornești; mașinile revin în cel mult 30 de secunde |
+| Telefonul nu deschide adresa laptopului | W e pornit cu `npm run dev` în loc de `npm run telefon`, sau rețeaua hotspot-ului e „Publică” în Windows: „De pe telefon” din `README.md`. Între timp, comenzile din O |
 | O mașină rămâne gri după tunel peste 40 de secunde | În C, ultimele rânduri ale mașinii; dacă C a căzut, îl pornești |
-| Chip-ul „fără legătură cu serverul” | S nu rulează: îl pornești; UI-ul se reconectează singur |
+| „FĂRĂ LEGĂTURĂ” în bara de sus | S nu rulează: îl pornești; UI-ul se reconectează singur |
 | În S, „Deconectat de la Mosquitto”, iar toate mașinile sînt gri | A nu rulează: îl pornești; dacă Mosquitto nu pornește, HiveMQ CE, după `README.md`. Serverul revine în cel mult 10 secunde, mașinile în cel mult 30 |
 
 ## Întrebări probabile

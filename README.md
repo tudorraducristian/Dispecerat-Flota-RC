@@ -196,21 +196,29 @@ Cifrele cu HiveMQ CE sînt de pe laptopul colegului.
 ## Ce găsești în UI
 
 - **Harta:**
-  - mașinile, colorate după stare: verde online, gri offline, portocaliu cu
-    vreme setată;
-  - panoul mașinii, comenzile și istoricul pe interval;
+  - mașinile, văzute de sus și rotite după direcția de mers, colorate după
+    stare: verde online, gri offline, portocaliu cu vreme setată;
+  - lista flotei și panoul mașinii, cu filele Comenzi și Traseu;
   - traseul: linie plină pentru live, punctată pentru recuperat, lipsă pentru
     pierdut.
-- **Rețea:** tunel, gaură, întârziere, bandă și normal; starea proxy-ului,
-  jurnalul, statisticile pe mașină și graficul de latență.
-- **Alarme:** lista, filtrată după „văzută”. Alarmele noi apar ca notificare pe
-  orice pagină.
+- **Rețea:** tunel, gaură, întârziere, bandă și „Rețea normală pentru toată
+  flota”; starea proxy-ului, jurnalul, statisticile pe mașină și graficul de
+  latență.
+- **Alarme:** fluxul de carduri, cu filtrul Nevăzute / Văzute / Toate, filtrul
+  după tip și „Le-am văzut pe toate”. Alarmele noi apar ca alertă pe orice
+  pagină, iar „Vezi pe hartă” deschide mașina, din alertă sau din card.
 - **Setări:** propria parolă și cele două setări ale flotei: după câte secunde
   offline vine alarma și câte minute arată traseul din panoul mașinii.
 - **Conturi,** doar pentru admin: lista, contul nou, resetarea parolei și
   ștergerea.
 
-Paginile se deschid din meniul lateral, de la butonul din stânga barei.
+Pe laptop, meniul stă mereu în stânga, cu cifra alarmelor nevăzute, iar ☰ îl
+ascunde. Pe telefon, ☰ deschide sertarul, iar punctul roșu de pe el arată că
+există alarme nevăzute.
+
+Toată aplicația merge și pe telefon, în browser: harta cu foaia care urcă de
+jos, Rețea pe trei file, Alarme, Setări, Conturi și login-ul. Cum ajunge
+telefonul la laptop scrie la „De pe telefon”.
 
 ## Documente
 
