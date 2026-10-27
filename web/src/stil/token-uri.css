@@ -70,9 +70,10 @@ body {
 
 /*
  * Butoanele scrise de mână pornesc fără stilul browserului. Doar cele fără clase Vuetify: stilurile Vuetify stau
- * într-un @layer, iar o regulă din afara lui le-ar bate pe toate, oricât de specifice ar fi.
+ * într-un @layer, iar o regulă din afara lui le-ar bate pe toate, oricât de specifice ar fi. :where îi ia
+ * specificitatea, ca orice clasă de buton de mai jos să-l bată.
  */
-button:not([class*='v-']) {
+button:where(:not([class*='v-'])) {
   margin: 0;
   padding: 0;
   border: 0;
@@ -83,6 +84,65 @@ button:not([class*='v-']) {
 
 .cifre {
   font-variant-numeric: tabular-nums;
+}
+
+/* Butoanele formularelor (Setări, Conturi, Login), aceleași pe toate paginile. */
+.buton-primar,
+.buton-secundar,
+.buton-pericol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--colt-control);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.buton-primar {
+  background: var(--primar);
+  color: var(--suprafata);
+}
+.buton-secundar {
+  border: 1px solid var(--margine);
+  background: var(--suprafata);
+  color: var(--text);
+}
+.buton-pericol {
+  background: var(--rosu);
+  color: var(--suprafata);
+}
+.buton-primar:disabled,
+.buton-secundar:disabled,
+.buton-pericol:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.buton-primar:focus-visible,
+.buton-secundar:focus-visible,
+.buton-pericol:focus-visible {
+  outline: 2px solid var(--primar);
+  outline-offset: 2px;
+}
+
+/* Reușita și eroarea unui formular, în cardul lui (redesign §4.8). */
+.mesaj {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--colt-control);
+  font-size: 12.5px;
+}
+.mesaj.ok {
+  background: var(--verde-slab);
+  color: var(--verde-text);
+}
+.mesaj.eroare {
+  background: var(--rosu-slab);
+  color: var(--rosu-text);
 }
 
 .eticheta-mica {
