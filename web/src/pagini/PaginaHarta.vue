@@ -119,6 +119,7 @@ export default {
 .lateral {
   width: 340px;
   overflow-y: auto;
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--bleumarin);
+  border-left: 1px solid var(--bleumarin-2);
 }
 </style>

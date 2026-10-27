@@ -6,8 +6,9 @@
 import L from 'leaflet'
 import { flota } from '../live.js'
 import { segmente } from '../traseu.js'
-
-const CULORI = { ONLINE: '#2e7d32', OFFLINE: '#9e9e9e', VREME: '#ef6c00' }
+import { directie } from '../directie.js'
+import { ALBASTRU_HARTA, CULORI_STARE, svgMasina } from '../masinaSvg.js'
+import { numeMasina } from '../text.js'
 
 export default {
   name: 'HartaFlotei',
@@ -19,6 +20,11 @@ export default {
   emits: ['alege'],
   data() {
     return { flota }
+  },
+  computed: {
+    mobil() {
+      return this.$vuetify.display.mobile
+    },
   },
   watch: {
     'flota.vreme': {
@@ -34,6 +40,12 @@ export default {
       },
     },
     selectata() {
+      this.deseneazaMasini()
+    },
+    // Peste prag se schimbă zona de atingere și tooltip-ul, deci markerele se fac din nou.
+    mobil() {
+      for (const marker of Object.values(this.markere)) marker.remove()
+      this.markere = {}
       this.deseneazaMasini()
     },
     zone() {
@@ -57,6 +69,9 @@ export default {
     this.deseneazaZone()
     this.stratTraseu = L.layerGroup().addTo(this.harta)
     this.markere = {}
+    // Locul de unde s-a calculat ultima direcție și direcția, pe mașină. Tot în afara lui data().
+    this.ultimulLoc = {}
+    this.directii = {}
     this.deseneazaMasini()
   },
   beforeUnmount() {
@@ -69,29 +84,72 @@ export default {
         const loc = [m.pozitie.lat, m.pozitie.lon]
         let marker = this.markere[m.id]
         if (!marker) {
-          marker = L.circleMarker(loc, { radius: 8, weight: 2, fillOpacity: 0.9 })
-            .bindTooltip(m.id)
+          marker = L.marker(loc, { icon: this.iconita(), keyboard: false })
             .on('click', () => this.$emit('alege', m.id))
             .addTo(this.harta)
+          // Pe telefon nu există hover: atingerea deschide mașina, iar numele apare în foaie (redesign §10.4).
+          if (!this.mobil) marker.bindTooltip(numeMasina(m.id), { direction: 'top', offset: [0, -16] })
           this.markere[m.id] = marker
         }
         marker.setLatLng(loc)
-        marker.setStyle({
-          color: m.id === this.selectata ? '#000000' : '#ffffff',
-          fillColor: this.culoare(m),
-        })
+        this.actualizeazaDirectia(m)
+        this.deseneazaMasina(marker, m)
       }
+    },
+    /**
+     * Pătratul markerului cuprinde mașina rotită în orice sens. Pe telefon e de 44 px, fiindcă un deget nu
+     * nimerește desenul de 22 px; centrul pătratului e mereu poziția mașinii.
+     */
+    iconita() {
+      const latura = this.mobil ? 44 : 36
+      return L.divIcon({
+        className: 'marker-masina',
+        html: '<div class="masina"></div>',
+        iconSize: [latura, latura],
+        iconAnchor: [latura / 2, latura / 2],
+      })
+    },
+    /**
+     * Direcția se schimbă doar după cel puțin 1 m de mers, față de locul ultimei direcții. Altfel, o mașină
+     * oprită s-ar roti după zgomotul poziției, iar una care merge încet n-ar mai avea niciodată o direcție.
+     */
+    actualizeazaDirectia(m) {
+      const anterior = this.ultimulLoc[m.id]
+      const acum = { lat: m.pozitie.lat, lon: m.pozitie.lon }
+      if (!anterior) {
+        this.ultimulLoc[m.id] = acum
+        return
+      }
+      const d = directie(anterior, acum)
+      if (d === null) return
+      // Unghiul nu se readuce în [0, 360): de la 350° la 10°, mașina se întoarce cu 20°, nu cu 340° înapoi.
+      const vechi = this.directii[m.id]
+      this.directii[m.id] = vechi === undefined ? d : vechi + ((((d - vechi) % 360) + 540) % 360) - 180
+      this.ultimulLoc[m.id] = acum
+    },
+    /** Rotirea stă pe div-ul interior: pe elementul markerului, Leaflet își pune propriul transform. */
+    deseneazaMasina(marker, m) {
+      const el = marker.getElement()?.querySelector('.masina')
+      if (!el) return
+      const culoare = this.culoare(m)
+      if (el.dataset.culoare !== culoare) {
+        el.innerHTML = svgMasina(culoare)
+        el.dataset.culoare = culoare
+      }
+      el.style.transform = `rotate(${this.directii[m.id] ?? 0}deg)`
+      el.classList.toggle('selectata', m.id === this.selectata)
+      marker.setZIndexOffset(m.id === this.selectata ? 1000 : 0)
     },
     /** Verde online, gri offline, portocaliu dacă e online, dar are vreme setată (spec §7). */
     culoare(m) {
       const vreme = flota.vreme[m.id]
-      if (m.stare === 'ONLINE' && vreme && vreme !== 'NORMAL') return CULORI.VREME
-      return CULORI[m.stare] ?? CULORI.OFFLINE
+      if (m.stare === 'ONLINE' && vreme && vreme !== 'NORMAL') return CULORI_STARE.VREME
+      return CULORI_STARE[m.stare] ?? CULORI_STARE.OFFLINE
     },
     deseneazaZone() {
       this.stratZone.clearLayers()
       const poligoane = this.zone.map((z) =>
-        L.polygon(z.poligon, { color: '#1565c0', weight: 1, fillOpacity: 0.08 })
+        L.polygon(z.poligon, { color: ALBASTRU_HARTA, weight: 1.5, fillOpacity: 0.06 })
           .bindTooltip(`${z.nume}: maxim ${z.vitezaMaxima} km/h`)
           .addTo(this.stratZone),
       )
@@ -103,8 +161,9 @@ export default {
     deseneazaTraseu() {
       this.stratTraseu.clearLayers()
       for (const s of segmente(this.traseu)) {
-        const stil = { color: '#1565c0', weight: 4, opacity: 0.8 }
-        if (s.fel === 'recuperat') stil.dashArray = '2 8'
+        const stil = { color: ALBASTRU_HARTA, weight: 4, opacity: 0.85, lineCap: 'round' }
+        // Aceleași puncte ca în legenda din fila Traseu.
+        if (s.fel === 'recuperat') stil.dashArray = '1 7'
         L.polyline(s.puncte, stil).addTo(this.stratTraseu)
       }
     },
@@ -116,5 +175,40 @@ export default {
 .harta {
   height: 100%;
   min-height: 400px;
+}
+/* Markerele le face Leaflet în afara componentei, deci stilul lor e global. */
+:global(.marker-masina) {
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+:global(.marker-masina .masina) {
+  position: relative;
+  width: 22px;
+  height: 36px;
+  transition: transform 300ms ease-out;
+}
+:global(.marker-masina .masina svg) {
+  display: block;
+  width: 22px;
+  height: 36px;
+  filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.35));
+}
+/* Inelul mașinii alese, ca în machetă. */
+:global(.marker-masina .masina.selectata::after) {
+  content: '';
+  position: absolute;
+  inset: -9px -13px;
+  z-index: -1;
+  border: 2.5px solid var(--primar);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primar) 12%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(.marker-masina .masina) {
+    transition: none;
+  }
 }
 </style>
