@@ -3,6 +3,7 @@
     <span class="eticheta-camp">{{ eticheta }}</span>
     <span class="intrare" :class="{ citire }">
       <input
+        ref="input"
         :type="tipInput"
         :value="modelValue"
         :readonly="citire"
@@ -51,10 +52,15 @@ export default {
     placeholder: { type: String, default: null },
     min: { type: Number, default: null },
     max: { type: Number, default: null },
+    autofocus: { type: Boolean, default: false },
   },
   emits: ['update:modelValue'],
   data() {
     return { vizibila: false }
+  },
+  /** Atributul autofocus al browserului nu prinde un câmp pus în pagină de router, după încărcare. */
+  mounted() {
+    if (this.autofocus) this.$refs.input.focus()
   },
   computed: {
     tipInput() {
