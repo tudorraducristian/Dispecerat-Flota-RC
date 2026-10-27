@@ -34,6 +34,9 @@
   --pe-bleumarin-text: #CBD5E1;
   --pe-bleumarin-linie: #334155;
   --pe-bleumarin-activ: #60A5FA;
+  /* textul tonurilor pe coloana închisă a Hărții (D52); pe alb rămân --rosu-text și --ambra-text */
+  --rosu-deschis: #FCA5A5;
+  --ambra-deschis: #FCD34D;
 
   /* fonturi, locale, din @fontsource */
   --font: 'Inter', system-ui, sans-serif;

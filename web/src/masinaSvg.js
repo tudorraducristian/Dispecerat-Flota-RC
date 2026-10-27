@@ -1,6 +1,12 @@
 /** Culorile stărilor, ca valori: Leaflet desenează în afara CSS-ului paginii, deci nu poate citi variabile. */
 export const CULORI_STARE = { ONLINE: '#16A34A', VREME: '#EA580C', OFFLINE: '#94A3B8' }
 
+/** Verde online, gri offline, portocaliu dacă e online, dar are vreme setată (spec §7). Pe hartă și în panou. */
+export function culoareMasina(stare, vreme) {
+  if (stare === 'ONLINE' && vreme && vreme !== 'NORMAL') return CULORI_STARE.VREME
+  return CULORI_STARE[stare] ?? CULORI_STARE.OFFLINE
+}
+
 /** Albastrul primar, pentru zonele și traseul desenate de Leaflet; același cu --primar. */
 export const ALBASTRU_HARTA = '#2563EB'
 

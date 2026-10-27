@@ -1,18 +1,29 @@
 <template>
   <div class="pagina">
     <HartaFlotei class="harta" :zone="zone" :traseu="traseu" :selectata="selectata" @alege="alege" />
+    <!-- Coloana din dreapta, bleumarin (D52): ori lista flotei, ori panoul mașinii alese, niciodată amândouă. -->
     <div class="lateral">
-      <PanouMasina :masina="masinaSelectata" @inchide="alege(null)" />
-      <PanouComenzi v-if="masinaSelectata" :masina="masinaSelectata" />
-      <AlegereInterval v-if="masinaSelectata" :minute="traseuMinute" @interval="arataInterval" @live="alege(selectata)" />
-      <v-alert v-if="eroareTraseu" type="error" density="compact" class="ma-2">{{ eroareTraseu }}</v-alert>
-      <ListaMasini :selectata="selectata" @alege="alege" />
+      <PanouMasina v-if="masinaSelectata" :masina="masinaSelectata" :zone="zone" @inchide="alege(null)">
+        <template #comenzi>
+          <PanouComenzi :masina="masinaSelectata" />
+        </template>
+        <template #traseu>
+          <FilaTraseu
+            :key="selectata"
+            :minute="traseuMinute"
+            :eroare="eroareTraseu"
+            @interval="arataInterval"
+            @live="alege(selectata)"
+          />
+        </template>
+      </PanouMasina>
+      <ListaMasini v-else :selectata="selectata" @alege="alege" />
     </div>
   </div>
 </template>
 
 <script>
-import AlegereInterval from '../components/AlegereInterval.vue'
+import FilaTraseu from '../components/FilaTraseu.vue'
 import HartaFlotei from '../components/HartaFlotei.vue'
 import ListaMasini from '../components/ListaMasini.vue'
 import PanouComenzi from '../components/PanouComenzi.vue'
@@ -22,7 +33,7 @@ import { flota, asculta } from '../live.js'
 
 export default {
   name: 'PaginaHarta',
-  components: { AlegereInterval, HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
+  components: { FilaTraseu, HartaFlotei, ListaMasini, PanouComenzi, PanouMasina },
   data() {
     return { zone: [], selectata: null, traseu: [], istoric: false, eroareTraseu: null, traseuMinute: 5 }
   },
@@ -111,7 +122,8 @@ export default {
 <style scoped>
 .pagina {
   display: flex;
-  height: calc(100vh - 48px);
+  /* --v-layout-top e înălțimea barei, pusă de Vuetify pe v-main: 56 px pe laptop, 52 pe telefon. */
+  height: calc(100vh - var(--v-layout-top, 56px));
 }
 .harta {
   flex: 1;

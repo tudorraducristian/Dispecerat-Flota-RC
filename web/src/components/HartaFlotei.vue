@@ -7,7 +7,7 @@ import L from 'leaflet'
 import { flota } from '../live.js'
 import { segmente } from '../traseu.js'
 import { directie } from '../directie.js'
-import { ALBASTRU_HARTA, CULORI_STARE, svgMasina } from '../masinaSvg.js'
+import { ALBASTRU_HARTA, culoareMasina, svgMasina } from '../masinaSvg.js'
 import { numeMasina } from '../text.js'
 
 export default {
@@ -140,11 +140,8 @@ export default {
       el.classList.toggle('selectata', m.id === this.selectata)
       marker.setZIndexOffset(m.id === this.selectata ? 1000 : 0)
     },
-    /** Verde online, gri offline, portocaliu dacă e online, dar are vreme setată (spec §7). */
     culoare(m) {
-      const vreme = flota.vreme[m.id]
-      if (m.stare === 'ONLINE' && vreme && vreme !== 'NORMAL') return CULORI_STARE.VREME
-      return CULORI_STARE[m.stare] ?? CULORI_STARE.OFFLINE
+      return culoareMasina(m.stare, flota.vreme[m.id])
     },
     deseneazaZone() {
       this.stratZone.clearLayers()
