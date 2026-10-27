@@ -49,8 +49,16 @@ export const api = {
   stareRetea: () => cere('/api/retea/stare'),
   vreme: (cerere) => cere('/api/retea/vreme', { method: 'POST', body: JSON.stringify(cerere) }),
   evenimente: () => cere('/api/retea/evenimente'),
-  alarme: (vazute) => cere('/api/alarme' + (vazute == null ? '' : `?vazute=${vazute}`)),
+  alarme: (vazute, tip) => {
+    const parametri = new URLSearchParams()
+    if (vazute != null) parametri.set('vazute', vazute)
+    if (tip != null) parametri.set('tip', tip)
+    return cere(`/api/alarme?${parametri}`)
+  },
+  numarAlarme: () => cere('/api/alarme/numar'),
   marcheazaVazuta: (id) => cere(`/api/alarme/${id}`, { method: 'PATCH' }),
+  marcheazaToateVazute: (tip) =>
+    cere('/api/alarme/vazute' + (tip == null ? '' : `?tip=${encodeURIComponent(tip)}`), { method: 'POST' }),
   trimiteComanda: (id, cerere) => cere(`/api/masini/${id}/comenzi`, { method: 'POST', body: JSON.stringify(cerere) }),
   comenzi: (id) => cere(`/api/masini/${id}/comenzi`),
   utilizatori: () => cere('/api/utilizatori'),

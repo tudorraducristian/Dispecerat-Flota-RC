@@ -3,6 +3,7 @@ package ro.flota.server.flota;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -35,13 +36,42 @@ public class Alarme {
         return new AlarmaDto(cheie.getKey().longValue(), masinaId, tip, sursa, ora, sosire, detalii, false);
     }
 
-    public List<AlarmaDto> lista(Boolean vazute) {
-        String unde = vazute == null ? "" : "WHERE vazuta = :vazute ";
+    /** tip poate fi null, adică toate tipurile. */
+    public List<AlarmaDto> lista(Boolean vazute, String tip) {
+        List<String> conditii = new ArrayList<>();
+        if (vazute != null) {
+            conditii.add("vazuta = :vazute");
+        }
+        if (tip != null) {
+            conditii.add("tip = :tip");
+        }
+        String unde = conditii.isEmpty() ? "" : "WHERE " + String.join(" AND ", conditii) + " ";
         JdbcClient.StatementSpec cerere = jdbc.sql("SELECT * FROM alarme " + unde + "ORDER BY ora_sosirii DESC, id DESC LIMIT 200");
         if (vazute != null) {
             cerere = cerere.param("vazute", vazute);
         }
+        if (tip != null) {
+            cerere = cerere.param("tip", tip);
+        }
         return cerere.query(Alarme::rand).list();
+    }
+
+    /** „Azi” începe la deLa, miezul nopții românesc, calculat de controller. */
+    public NumarAlarme numar(Instant deLa) {
+        // Pe un tabel gol, SUM dă NULL, nu 0.
+        return jdbc.sql("SELECT COALESCE(SUM(vazuta = FALSE), 0) AS nevazute, "
+                        + "COALESCE(SUM(ora_sosirii >= :deLa), 0) AS azi FROM alarme")
+                .param("deLa", Ore.ts(deLa))
+                .query((rs, nr) -> new NumarAlarme(rs.getLong("nevazute"), rs.getLong("azi")))
+                .single();
+    }
+
+    /** Întoarce câte alarme a marcat. tip poate fi null, adică toate tipurile. */
+    public int marcheazaToateVazute(String tip) {
+        if (tip == null) {
+            return jdbc.sql("UPDATE alarme SET vazuta = TRUE WHERE vazuta = FALSE").update();
+        }
+        return jdbc.sql("UPDATE alarme SET vazuta = TRUE WHERE vazuta = FALSE AND tip = :tip").param("tip", tip).update();
     }
 
     public Optional<AlarmaDto> marcheazaVazuta(long id) {
