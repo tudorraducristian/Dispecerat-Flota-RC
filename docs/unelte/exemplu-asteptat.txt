@@ -1,0 +1,21 @@
+[paper title] An Example Title for the Tool Test
+[Author] Jane Doe | Dept. of Automation | Technical University | Cluj-Napoca, Romania | jane@example.com
+[Normal]
+[Abstract] Abstract—This abstract checks that the tool writes the abstract style.
+[Keywords] Keywords—MQTT, testing, tools
+[heading 1] Introduction
+[Body Text] A body paragraph with bold text, italic text and code text.
+[heading 2] A second level
+[bullet list] the first bullet
+[bullet list] the second bullet with bold
+[heading 3] A third level
+[Body Text] Another body paragraph.
+[Normal] <imagine>
+[figure caption] An example figure caption
+[table head] An example table head
+[tabel] 3×2
+[heading 5] References
+[references] A. Author, "A first reference," 2020.
+[references] B. Author, "A second reference," 2021.
+[Normal]
+[Normal]
