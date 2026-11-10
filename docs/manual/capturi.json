@@ -1,0 +1,10 @@
+[
+  {"fisier": "01-login.png", "ruta": "/login", "cont": null, "asteapta": 2000},
+  {"fisier": "02-harta.png", "ruta": "/", "cont": "dispecer", "asteapta": 5000},
+  {"fisier": "03-harta-masina.png", "ruta": "/?masina=masina-3", "cont": "dispecer", "asteapta": 6000, "ascunde": ".stiva"},
+  {"fisier": "04-retea.png", "ruta": "/retea", "cont": "dispecer", "asteapta": 5000, "ascunde": ".stiva"},
+  {"fisier": "05-alarme.png", "ruta": "/alarme", "cont": "dispecer", "asteapta": 4000, "ascunde": ".stiva"},
+  {"fisier": "06-setari-dispecer.png", "ruta": "/setari", "cont": "dispecer", "asteapta": 3000, "ascunde": ".stiva"},
+  {"fisier": "07-setari-admin.png", "ruta": "/setari", "cont": "admin", "asteapta": 3000, "ascunde": ".stiva"},
+  {"fisier": "08-conturi.png", "ruta": "/conturi", "cont": "admin", "asteapta": 3000, "ascunde": ".stiva"}
+]

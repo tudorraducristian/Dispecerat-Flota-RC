@@ -53,6 +53,16 @@ function InchideParagraf {
 while ($i -lt $linii.Count) {
     $l = $linii[$i]
     if ($l.Trim() -eq '') { InchideParagraf; $i++; continue }
+    if ($l.Trim().StartsWith('```')) {
+        # Un bloc de cod devine un singur paragraf, cu rânduri noi în el (pentru manual).
+        InchideParagraf
+        $i++
+        $cod = New-Object System.Collections.ArrayList
+        while ($i -lt $linii.Count -and -not $linii[$i].Trim().StartsWith('```')) { [void]$cod.Add($linii[$i]); $i++ }
+        $i++
+        [void]$blocuri.Add(@{ fel = 'blocCod'; text = ($cod -join [char]11) })
+        continue
+    }
     if ($l -match '^(#{1,3})\s+(.*)$') {
         InchideParagraf
         $nivel = $Matches[1].Length; $titlu = $Matches[2].Trim()
@@ -189,6 +199,21 @@ try {
             'lista' { Adauga $harta.lista $b.text }
             'listaNumerotata' { Adauga $harta.listaNumerotata $b.text }
             'referinta' { Adauga $harta.referinte $b.text }
+            'blocCod' {
+                # Textul intră așa cum e: fără ** sau ` interpretate.
+                $start = $script:poz
+                $doc.Range($start, $start).InsertAfter($b.text + "`r")
+                $par = $doc.Range($start, $start + $b.text.Length + 1)
+                $par.Style = $doc.Styles.Item($harta.blocCod)
+                $par.Font.Reset()
+                $par.Font.Name = $harta.cod
+                $par.Font.Size = 9.5
+                $par.ParagraphFormat.LeftIndent = 14
+                $par.ParagraphFormat.SpaceBefore = 4
+                $par.ParagraphFormat.SpaceAfter = 10
+                $par.Shading.BackgroundPatternColor = 15921906 # gri deschis, F2F2F2
+                $script:poz = $start + $b.text.Length + 1
+            }
             'imagine' {
                 if (-not (Test-Path -LiteralPath $b.cale)) { throw "lipsește imaginea $($b.cale)" }
                 $start = $script:poz

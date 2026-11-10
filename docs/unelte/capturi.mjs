@@ -106,6 +106,11 @@ try {
     await mergiLa(pagina, 'about:blank')
     await mergiLa(pagina, UI + c.ruta)
     await dormi(c.asteapta ?? 3000)
+    // "ascunde": un selector CSS ascuns înainte de captură, de exemplu alertele care acoperă pagina.
+    if (c.ascunde) {
+      await pagina.evalueaza(`(() => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(c.ascunde + '{visibility:hidden !important}')}; document.head.appendChild(s) })()`)
+      await dormi(200)
+    }
     const unde = await pagina.evalueaza('location.href + " · " + document.visibilityState + " · " + document.body.innerText.length + " caractere"')
     console.log(`${c.fisier}: ${unde}`)
     const { data } = await pagina.trimite('Page.captureScreenshot', { format: 'png' })
