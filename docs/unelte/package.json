@@ -1,0 +1,8 @@
+{
+  "name": "flota-rc-unelte",
+  "private": true,
+  "description": "Uneltele documentelor (faza 6): pptxgenjs pentru PowerPoint.",
+  "dependencies": {
+    "pptxgenjs": "4.0.1"
+  }
+}

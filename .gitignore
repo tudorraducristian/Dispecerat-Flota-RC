@@ -6,3 +6,5 @@ dist/
 *.iml
 .vscode/
 __pycache__/
+docs/prezentare/slide-uri/
+docs/unelte/node_modules/

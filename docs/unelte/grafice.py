@@ -175,7 +175,8 @@ def tunel_gaura(cai, durate, limba):
     for i, (cale, durata, t0, vizibile, seq0, pierdute, recuperate) in enumerate(panouri):
         sus = sus0 + i * (h_panou + 22)
         jos = sus + h_panou
-        ymax = vizibile[-1]['seq'] - seq0
+        # O treime în plus deasupra ultimului punct, ca titlul panoului să nu stea peste puncte.
+        ymax = (vizibile[-1]['seq'] - seq0) * 1.35
         ys = gradatii(0, ymax, 3)
         sy = Scara(0, max(ymax, ys[-1]), jos, sus)
         d.drept(sx(0), sus, sx(durata) - sx(0), h_panou, CULOARE_BANDA)
