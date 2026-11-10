@@ -224,7 +224,22 @@ telefonul la laptop scrie la „De pe telefon”.
 
 - `docs\scenariu-test.md`: scenariul de test, de la cap la coadă, și
   măsurătorile.
-- `docs\scenariu-prezentare.md`: prezentarea, în 5 minute.
+- `docs\scenariu-prezentare.md`: prezentarea, în 8 minute, cu demonstrația în 5.
+- `docs\articol\articol-flota-rc.docx` și `.pdf`: articolul științific, în
+  engleză, pe template-ul IEEE. Textul stă în `docs\articol\articol.md`, figurile
+  în `docs\articol\figuri\` (se refac cu `refa.ps1`), iar măsurătorile în
+  `docs\articol\masuratori.md`.
+- `docs\prezentare\flota-rc.pptx` și `.pdf`: PowerPoint-ul, cu notele
+  vorbitorului. Se reface cu `cd docs\unelte; npm install; node prezentare.cjs`.
+- `docs\manual\manual-flota-rc.docx` și `.pdf`: manualul de utilizare, cu
+  capturile din `docs\manual\capturi\`. Textul stă în `docs\manual\manual.md`.
+
+Articolul și manualul se fac din Markdown cu Word, prin
+`docs\unelte\docx-din-md.ps1`, de exemplu:
+
+```powershell
+& docs\unelte\docx-din-md.ps1 -Baza "docs\articol\model\Model articol stiintific RC.docx" -Text docs\articol\articol.md -Iesire docs\articol\articol-flota-rc.docx -Stiluri docs\unelte\stiluri-ieee.json -Pdf
+```
 
 ## Traseele
 

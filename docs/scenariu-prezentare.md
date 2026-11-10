@@ -1,13 +1,22 @@
-# Prezentarea, în 5 minute
+# Prezentarea: 8 minute, cu demonstrația în 5
 
-După spec §11. Cifrele vin din tabelul „Măsurători” din `scenariu-test.md`.
+După spec §11 și §16.6. Cifrele vin din tabelul „Măsurători” din `scenariu-test.md`.
+
+**Ordinea:** slide-urile 1–5 din `docs\prezentare\flota-rc.pptx`, apoi
+demonstrația (slide-ul 6 și pașii 1–6 de mai jos), apoi slide-urile 7–10.
+**Ținta (D34):** demonstrația sub 5 minute, totul sub 8, până răspunde
+profesorul cu data și durata (Î2). Textul de spus la fiecare slide stă în notele
+vorbitorului din PowerPoint.
 
 **Scena:** harta stă pe laptop, la proiector. Comenzile de rețea le dai de pe
 telefon, din pagina Rețea, iar sala vede efectul pe laptop (redesign §10).
 
 ## Cu o zi înainte
 
-- Repetiția completă, cu cronometrul: toți cei șase pași, sub 5 minute.
+- Repetiția completă, cu cronometrul: slide-urile și toți cei șase pași, sub 8
+  minute, cu demonstrația sub 5.
+- Contul `dispecer1` există: dacă nu, îl faci ca `admin`, din Conturi, cu rolul
+  Dispecer.
 - Hotspot-ul telefonului încercat pe laptop. Harta are nevoie de internet (R3).
 - Telefonul încercat pe adresa laptopului, după „De pe telefon” din `README.md`.
 
@@ -23,14 +32,21 @@ telefon, din pagina Rețea, iar sala vede efectul pe laptop (redesign §10).
    Sql "UPDATE alarme SET vazuta = TRUE"
    ```
 
-4. Pe laptop, în browser:
+4. Pe laptop, în browser, login ca `dispecer1` în tabul 1, apoi:
    - tabul 1: Harta, mărită pe zonă, cu Mașina 3 aleasă;
    - tabul 2: Rețea.
-5. Pe telefon, în Chrome: adresa de pe rândul `Network` al lui W, login, apoi
+5. PowerPoint-ul deschis la slide-ul 1, `docs\prezentare\flota-rc.pptx`, cu
+   vederea prezentatorului, ca notele să se vadă doar pe laptop.
+6. Pe telefon, în Chrome: adresa de pe rândul `Network` al lui W, login, apoi
    Rețea, fila Comenzi.
-6. În O, `STARE`: zece rânduri `NORMAL`.
+7. În O, `STARE`: zece rânduri `NORMAL`.
 
-## Pașii
+## Slide-urile 1–5, vreo 2 minute
+
+Titlul, problema, arhitectura, MQTT cu QoS-ul și proxy-ul cu „vremea”. La
+slide-ul 6, „Demonstrație live”, treci pe browser.
+
+## Demonstrația, sub 5 minute
 
 ### 1. Zece mașini live, 30 de secunde
 
@@ -118,6 +134,11 @@ mașinile devin portocalii.
 
 La final, pe telefon, „Rețea normală pentru toată flota”.
 
+## Slide-urile 7–10, vreo 1,5 minute
+
+Înapoi în PowerPoint, la slide-ul 7: rezultatele măsurate, login-ul și limitele
+lui, ce n-am făcut, concluziile. Slide-ul 10 rămâne pe ecran la întrebări.
+
 ## Dacă ceva merge prost
 
 | Ce vezi | Ce faci |
@@ -140,5 +161,13 @@ La final, pe telefon, „Rețea normală pentru toată flota”.
   alarmele și confirmările rămân. Serverul le numără ca pierdute.
 - **De ce serverul nu trece prin proxy?** Dispecerul nu stă în tunel: ar intra
   și el în tunel și n-ar mai vedea nimic.
+- **De ce token și nu sesiune pe server?** Același token merge și la REST, și la
+  WebSocket, unde browserul nu poate pune cookie-uri sau header-e la fel de
+  simplu; serverul îl ține în tabelul `tokenuri`, deci log off-ul îl șterge și
+  închide pe loc canalele deschise cu el.
+- **Ce vede cineva care ascultă rețeaua?** Totul: HTTP-ul e necriptat, deci
+  parola la login, token-ul la fiecare cerere și în adresa WebSocket-ului, plus
+  mesajele MQTT. TLS, adică HTTPS și MQTT peste TLS, ar ascunde tot; a rămas în
+  afara scopului (spec §13).
 - **Ce ar trebui pentru mașini reale?** TLS, autentificare, NTP pentru ceasuri
   și un broker în cloud. Proiectul a lăsat asta deoparte (spec §13).
