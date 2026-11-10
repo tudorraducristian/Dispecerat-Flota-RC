@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="192" viewBox="0 0 252 192" font-family="Times New Roman" font-size="8">
+  <!-- Schema conexiunilor MQTT: topic-urile, sensul și QoS-ul fiecăruia (spec §4.1). -->
+  <defs>
+    <marker id="v" viewBox="0 0 10 10" refX="9.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000"/>
+    </marker>
+    <style>
+      .cutie { fill: #eef3f8; stroke: #1f4e79; stroke-width: 0.8; }
+      .nume { font-size: 9px; font-weight: bold; text-anchor: middle; }
+      .sub { text-anchor: middle; }
+      .viata { stroke: #8a8a8a; stroke-width: 0.5; stroke-dasharray: 2 2; }
+      .fir { stroke: #000; stroke-width: 0.7; fill: none; }
+      .topic { text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+      .qos { font-weight: bold; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fff"/>
+
+  <rect class="cutie" x="4" y="6" width="64" height="30" rx="2"/>
+  <text class="nume" x="36" y="18">masina-N</text>
+  <text class="sub" x="36" y="30">proxy :1884</text>
+
+  <rect class="cutie" x="94" y="6" width="64" height="30" rx="2"/>
+  <text class="nume" x="126" y="18">Mosquitto</text>
+  <text class="sub" x="126" y="30">:1883</text>
+
+  <rect class="cutie" x="184" y="6" width="64" height="30" rx="2"/>
+  <text class="nume" x="216" y="18">Server</text>
+  <text class="sub" x="216" y="30">ID dispecer</text>
+
+  <line class="viata" x1="36" y1="36" x2="36" y2="176"/>
+  <line class="viata" x1="126" y1="36" x2="126" y2="176"/>
+  <line class="viata" x1="216" y1="36" x2="216" y2="176"/>
+
+  <!-- Mașina → server, prin broker. -->
+  <line class="fir" x1="36" y1="58" x2="125" y2="58" marker-end="url(#v)"/>
+  <line class="fir" x1="127" y1="58" x2="215" y2="58" marker-end="url(#v)"/>
+  <text class="topic" x="126" y="53">flota/&lt;id&gt;/telemetrie · <tspan class="qos">QoS 0</tspan> · 1/s</text>
+
+  <line class="fir" x1="36" y1="84" x2="125" y2="84" marker-end="url(#v)"/>
+  <line class="fir" x1="127" y1="84" x2="215" y2="84" marker-end="url(#v)"/>
+  <text class="topic" x="126" y="79">flota/&lt;id&gt;/alarma · <tspan class="qos">QoS 2</tspan></text>
+
+  <line class="fir" x1="36" y1="110" x2="125" y2="110" marker-end="url(#v)"/>
+  <line class="fir" x1="127" y1="110" x2="215" y2="110" marker-end="url(#v)"/>
+  <text class="topic" x="126" y="105">flota/&lt;id&gt;/stare · <tspan class="qos">QoS 1</tspan> · retain · Last Will</text>
+
+  <line class="fir" x1="36" y1="136" x2="125" y2="136" marker-end="url(#v)"/>
+  <line class="fir" x1="127" y1="136" x2="215" y2="136" marker-end="url(#v)"/>
+  <text class="topic" x="126" y="131">flota/&lt;id&gt;/confirmari · <tspan class="qos">QoS 1</tspan></text>
+
+  <!-- Server → mașină. -->
+  <line class="fir" x1="216" y1="162" x2="127" y2="162" marker-end="url(#v)"/>
+  <line class="fir" x1="125" y1="162" x2="37" y2="162" marker-end="url(#v)"/>
+  <text class="topic" x="126" y="157">flota/&lt;id&gt;/comenzi · <tspan class="qos">QoS 1</tspan></text>
+
+  <text class="sub" x="126" y="188">cleanSession = false · keepAlive = 5 s</text>
+</svg>

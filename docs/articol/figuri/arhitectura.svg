@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="266" viewBox="0 0 252 266" font-family="Times New Roman" font-size="8">
+  <!-- Diagrama bloc a sistemului (spec §3). Lățimea de 252 de unități e o coloană IEEE, deci 8 unități = 8 pt. -->
+  <defs>
+    <marker id="v" viewBox="0 0 10 10" refX="9.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000"/>
+    </marker>
+    <style>
+      .cutie { fill: #eef3f8; stroke: #1f4e79; stroke-width: 0.8; }
+      .baza { fill: #f7efe6; stroke: #c55a11; stroke-width: 0.8; }
+      .nume { font-size: 9px; font-weight: bold; text-anchor: middle; }
+      .sub { text-anchor: middle; }
+      .fir { stroke: #000; stroke-width: 0.7; fill: none; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fff"/>
+
+  <!-- Coloana din stânga: drumul datelor. -->
+  <rect class="cutie" x="10" y="6" width="120" height="32" rx="2"/>
+  <text class="nume" x="70" y="19">Simulator</text>
+  <text class="sub" x="70" y="31">masina-1 … masina-10 · Java 21</text>
+
+  <rect class="cutie" x="10" y="62" width="120" height="32" rx="2"/>
+  <text class="nume" x="70" y="75">Proxy</text>
+  <text class="sub" x="70" y="87">Java 21 · sockets · :1884, :1885</text>
+
+  <rect class="cutie" x="10" y="118" width="120" height="32" rx="2"/>
+  <text class="nume" x="70" y="131">Mosquitto 2.1</text>
+  <text class="sub" x="70" y="143">broker MQTT 3.1.1 · :1883</text>
+
+  <rect class="cutie" x="10" y="174" width="120" height="32" rx="2"/>
+  <text class="nume" x="70" y="187">Server</text>
+  <text class="sub" x="70" y="199">Spring Boot 4.1 · :8080</text>
+
+  <rect class="cutie" x="10" y="230" width="120" height="32" rx="2"/>
+  <text class="nume" x="70" y="243">UI</text>
+  <text class="sub" x="70" y="255">Vue 3 · Leaflet · Vite :5173</text>
+
+  <rect class="baza" x="166" y="230" width="78" height="32" rx="2"/>
+  <text class="nume" x="205" y="243">MySQL 8.4</text>
+  <text class="sub" x="205" y="255">:3306</text>
+
+  <!-- Legăturile din coloană. -->
+  <line class="fir" x1="70" y1="38" x2="70" y2="62" marker-end="url(#v)"/>
+  <text x="76" y="53">MQTT / TCP → :1884</text>
+  <line class="fir" x1="70" y1="94" x2="70" y2="118" marker-end="url(#v)"/>
+  <text x="76" y="109">TCP → :1883</text>
+  <line class="fir" x1="70" y1="150" x2="70" y2="174" marker-start="url(#v)" marker-end="url(#v)"/>
+  <text x="76" y="165">MQTT · client ID dispecer</text>
+  <line class="fir" x1="70" y1="206" x2="70" y2="230" marker-start="url(#v)" marker-end="url(#v)"/>
+  <text x="76" y="221">REST /api · WebSocket /ws</text>
+
+  <!-- Ordinele de vreme: serverul → proxy, pe 1885. -->
+  <polyline class="fir" points="130,182 238,182 238,78 130,78" marker-end="url(#v)"/>
+  <text x="184" y="74" text-anchor="middle">TCP :1885 · text</text>
+
+  <!-- Istoricul: serverul ↔ MySQL. -->
+  <polyline class="fir" points="130,198 205,198 205,230" marker-start="url(#v)" marker-end="url(#v)"/>
+  <text x="209" y="216">JDBC</text>
+</svg>
